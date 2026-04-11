@@ -175,7 +175,6 @@ export default function CareerDiaryDetailsPage() {
                 </div>
             </div>
 
-            {/* Entries table */}
             <div className="mt-6 rounded-2xl border border-black/5 bg-white p-6 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
                 <div className="text-[14px] font-semibold text-black/80">История записей</div>
                 <div className="mt-1 text-[12px] text-black/45">Все записи в дневнике практики</div>
@@ -228,7 +227,6 @@ export default function CareerDiaryDetailsPage() {
                 </div>
             </div>
 
-            {/* Modals */}
             <Modal open={openEntry} title="Запись дневника" onClose={() => setOpenEntry(false)}>
                 <textarea
                     value={entryText}

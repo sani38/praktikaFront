@@ -1,4 +1,5 @@
 ﻿import React from "react";
+import { useNavigate } from "react-router-dom";
 
 /* ICONS */
 const IconUser = ({ size = 16 }) => (
@@ -88,6 +89,7 @@ const PartnerArrow = ({ dir = "left" }) => (
 
 /* PAGE */
 export default function PublicHomePage() {
+    const navigate = useNavigate();
     return (
         <div className="min-h-screen bg-[#f7f8fa] text-[#14181f]">
             {/* HEADER */}
@@ -100,6 +102,7 @@ export default function PublicHomePage() {
 
                     <div className="flex items-center gap-[10px]">
                         <button
+                            onClick={() => navigate("/student")}
                             className="inline-flex items-center gap-2 rounded-[10px] border border-[#e8ecf2] bg-white px-3 py-[9px] text-[13px] font-semibold text-[#1f2937] transition hover:shadow-[0_6px_18px_rgba(16,24,40,.06)] active:translate-y-[1px]"
                             type="button"
                         >
@@ -167,6 +170,7 @@ export default function PublicHomePage() {
                         </div>
 
                         <button
+                            onClick={() => navigate("/student")}
                             className="mt-[14px] inline-flex items-center gap-2 rounded-[10px] border border-[#187dde]/20 bg-[#e9f2ff] px-[14px] py-[10px] text-[14px] font-semibold text-[#187dde] transition hover:shadow-[0_10px_18px_rgba(16,24,40,.06)] active:translate-y-[1px]"
                             type="button"
                         >
@@ -308,6 +312,7 @@ export default function PublicHomePage() {
                         </div>
 
                         <button
+                            onClick={() => navigate("/student")}
                             className="mt-3 inline-flex items-center gap-2 rounded-[12px] bg-[#187dde] px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_10px_18px_rgba(24,125,222,.20)] transition hover:bg-[#1f86e7] active:translate-y-[1px]"
                             type="button"
                         >
@@ -343,6 +348,7 @@ export default function PublicHomePage() {
                         </div>
 
                         <button
+                            onClick={() => navigate("/employer")}
                             className="mt-3 inline-flex items-center gap-2 rounded-[12px] bg-[#187dde] px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_10px_18px_rgba(24,125,222,.20)] transition hover:bg-[#1f86e7] active:translate-y-[1px]"
                             type="button"
                         >
@@ -460,6 +466,7 @@ export default function PublicHomePage() {
 
                         <div className="flex items-center gap-[10px] pt-1">
                             <button
+                                onClick={() => navigate("/employer/create")}
                                 className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-[#187dde] px-[14px] py-[10px] text-[14px] font-semibold text-white shadow-[0_10px_18px_rgba(24,125,222,.20)] transition hover:bg-[#1f86e7] active:translate-y-[1px]"
                                 type="button"
                             >

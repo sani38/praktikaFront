@@ -43,8 +43,6 @@ function RolePill({ role }) {
         Администратор: "gray",
     };
     const v = map[role] || "gray";
-    // В AdminUi нет blue/yellow в pill — используем info/gray/green/red/yellow из AdminUi:
-    // поэтому нормализуем:
     const variant = v === "blue" ? "info" : v;
     return <Pill variant={variant}>{role}</Pill>;
 }
@@ -81,13 +79,11 @@ export default function AdminUsersPage() {
         });
     }, [q, roleFilter, statusFilter, users]);
 
-    // ---- Modals state
     const [editOpen, setEditOpen] = useState(false);
     const [blockOpen, setBlockOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [current, setCurrent] = useState(null);
 
-    // Edit form
     const [fName, setFName] = useState("");
     const [fEmail, setFEmail] = useState("");
     const [fRole, setFRole] = useState("Студент");
@@ -246,7 +242,6 @@ export default function AdminUsersPage() {
                 </div>
             </div>
 
-            {/* Pagination (демо) */}
             <div className="mt-8 flex items-center justify-center gap-2 text-[12px] text-black/45">
                 <button className="h-8 w-8 rounded-lg border border-black/10 bg-white hover:bg-black/5">←</button>
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1677ff] text-white">1</span>
@@ -257,7 +252,6 @@ export default function AdminUsersPage() {
                 <button className="h-8 w-8 rounded-lg border border-black/10 bg-white hover:bg-black/5">→</button>
             </div>
 
-            {/* ---- Modals */}
             <Modal open={editOpen} title="Редактировать пользователя" onClose={() => setEditOpen(false)}>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>

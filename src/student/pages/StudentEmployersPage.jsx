@@ -287,8 +287,6 @@ export default function StudentEmployersPage() {
                 x.sector.toLowerCase().includes(query);
             const byCity = city === "Город" || x.city === city;
 
-            // фильтры “Оплата/Длительность/Категория” на работодателях оставляем как UI ,
-            // но не режем список
             return byQuery && byCity;
         });
     }, [q, city, pay, duration, category]);

@@ -66,7 +66,7 @@ export default function CareerDiaryPage() {
             <div className="text-[12px] text-[#1677ff]">Дневник практики</div>
             <h1 className="mt-2 text-[20px] font-semibold text-black/80">Дневник практики</h1>
 
-            {/* Search */}
+            {/* Поиск */}
             <div className="mt-5 flex items-center gap-3">
                 <input
                     value={q}
@@ -82,7 +82,7 @@ export default function CareerDiaryPage() {
                 </button>
             </div>
 
-            {/* Filters */}
+            {/* Фильтры */}
             <div className="mt-4 flex items-center gap-2 text-[12px] font-semibold text-black/60">
                 <span className="text-black/50">⚑</span> Фильтры
             </div>
@@ -113,7 +113,6 @@ export default function CareerDiaryPage() {
 
             <div className="mt-6 text-[14px] font-semibold text-black/75">Дневник практики</div>
 
-            {/* Table */}
             <div className="mt-4 overflow-hidden rounded-2xl border border-black/5 bg-white">
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[980px] border-collapse text-left">
@@ -163,7 +162,6 @@ export default function CareerDiaryPage() {
                 </div>
             </div>
 
-            {/* Pagination */}
             <div className="mt-8 flex items-center justify-center gap-2 text-[12px] text-black/45">
                 <button className="h-8 w-8 rounded-lg border border-black/10 bg-white hover:bg-black/5">←</button>
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1677ff] text-white">1</span>

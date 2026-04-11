@@ -349,7 +349,7 @@ export default function AdminSettingsPage() {
                     </>
                 )}
 
-                {/* общие кнопки снизу как в макете */}
+                {/* общие кнопки снизу */}
                 <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
                     <button
                         type="button"

@@ -202,7 +202,6 @@ export default function AdminLogsPage() {
                 </div>
             </div>
 
-            {/* Pagination (демо) */}
             <div className="mt-8 flex items-center justify-center gap-2 text-[12px] text-black/45">
                 <button className="h-8 w-8 rounded-lg border border-black/10 bg-white hover:bg-black/5">←</button>
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1677ff] text-white">1</span>

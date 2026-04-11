@@ -123,7 +123,6 @@ export default function StudentInternshipDetailsPage() {
                 </div>
             </div>
 
-            {/* пагинаци€ Ч можно оставить как УстатичнуюФ дл€ вида */}
             <Pagination page={1} totalPages={123} onPage={() => navigate("/student/internships")} />
         </div>
     );
