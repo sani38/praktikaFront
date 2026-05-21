@@ -1,5 +1,16 @@
-﻿import React from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getVacancyCategoryNames } from "../shared/api/vacancyCategoryApi";
+import {
+    getVacancyCount,
+    getNewVacancyCount,
+} from "../shared/api/vacancyApi";
+import { getEmployerCount } from "../shared/api/employerApi";
+import { getRegionCount } from "../shared/api/regionApi";
+import { 
+    getCompanyNames,
+    getCompanyCount,
+} from "../shared/api/companyApi";
 
 /* ICONS */
 const IconUser = ({ size = 16 }) => (
@@ -68,11 +79,12 @@ const SmallCardIcon = ({ variant = "blue" }) => {
     );
 };
 
-const PartnerArrow = ({ dir = "left" }) => (
+const PartnerArrow = ({ dir = "left", onClick }) => (
     <button
         className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white text-slate-500 transition hover:shadow-[0_10px_18px_rgba(16,24,40,.06)]"
         type="button"
         aria-label={dir === "left" ? "Назад" : "Вперёд"}
+        onClick={onClick}
     >
         <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -90,6 +102,149 @@ const PartnerArrow = ({ dir = "left" }) => (
 /* PAGE */
 export default function PublicHomePage() {
     const navigate = useNavigate();
+    const [categories, setCategories] = useState([]);
+    const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
+    const [categoriesError, setCategoriesError] = useState(null);
+    const [vacancyCount, setVacancyCount] = useState(0);
+    const [newVacancyCount, setNewVacancyCount] = useState(0);
+    const [employerCount, setEmployerCount] = useState(0);
+    const [regionCount, setRegionCount] = useState(0);
+
+    const [companyNames, setCompanyNames] = useState([]);
+    const [firstCompanyIndex, setFirstCompanyIndex] = useState(0);
+    const visibleCompanyCount = 7;
+    const visibleCompanies = Array.from({ length: Math.min(visibleCompanyCount, companyNames.length) }, (_, index) => {
+        const companyIndex = (firstCompanyIndex + index) % companyNames.length;
+        return companyNames[companyIndex];
+    });
+
+    const [companyCount, setCompanyCount] = useState(0);
+
+    function handlePrevCompanies() {
+        if (companyNames.length === 0) return;
+
+        setFirstCompanyIndex((prev) =>
+            prev === 0 ? companyNames.length - 1 : prev - 1
+        );
+    }
+
+    function handleNextCompanies() {
+        if (companyNames.length === 0) return;
+
+        setFirstCompanyIndex((prev) =>
+            prev === companyNames.length - 1 ? 0 : prev + 1
+        );
+    }
+
+    useEffect(() => {
+        async function loadCategories() {
+            try {
+                setIsCategoriesLoading(true);
+                setCategoriesError(null);
+
+                const data = await getVacancyCategoryNames("ru");
+
+                setCategories(data);
+            } catch (error) {
+                console.error("Ошибка загрузки категорий:", error);
+                setCategoriesError("Не удалось загрузить категории");
+            } finally {
+                setIsCategoriesLoading(false);
+            }
+        }
+
+        loadCategories();
+    }, []);
+    useEffect(() => {
+        async function loadVacancyCount() {
+            try {
+                const count = await getVacancyCount();
+
+                setVacancyCount(count);
+            } catch (error) {
+                console.error("Ошибка загрузки количества вакансий:", error);
+
+                setVacancyCount(0);
+            }
+        }
+
+        loadVacancyCount();
+    }, []);
+    useEffect(() => {
+        async function loadNewVacancyCount() {
+            try {
+                const count = await getNewVacancyCount();
+
+                setNewVacancyCount(count);
+            } catch (error) {
+                console.error("Ошибка загрузки количества новых вакансий:", error);
+
+                setNewVacancyCount(0);
+            }
+        }
+
+        loadNewVacancyCount();
+    }, []);
+    useEffect(() => {
+        async function loadEmployerCount() {
+            try {
+                const count = await getEmployerCount();
+
+                setEmployerCount(count);
+            } catch (error) {
+                console.error("Ошибка загрузки количества работодателей:", error);
+
+                setEmployerCount(0);
+            }
+        }
+
+        loadEmployerCount();
+    }, []);
+    useEffect(() => {
+        async function loadRegionCount() {
+            try {
+                const count = await getRegionCount();
+
+                setRegionCount(count);
+            } catch (error) {
+                console.error("Ошибка загрузки количества регионов:", error);
+
+                setRegionCount(0);
+            }
+        }
+
+        loadRegionCount();
+    }, []);
+    useEffect(() => {
+        async function loadCompanyNames() {
+            try {
+                const companies = await getCompanyNames("en");
+
+                setCompanyNames(companies);
+            } catch (error) {
+                console.error("Ошибка загрузки компаний:", error);
+
+                setCompanyNames([]);
+            }
+        }
+
+        loadCompanyNames();
+    }, []);
+    useEffect(() => {
+        async function loadCompanyCount() {
+            try {
+                const count = await getCompanyCount();
+
+                setCompanyCount(count);
+            } catch (error) {
+                console.error("Ошибка загрузки количества компаний:", error);
+
+                setCompanyCount(0);
+            }
+        }
+
+        loadCompanyCount();
+    }, []);
     return (
         <div className="min-h-screen bg-[#f7f8fa] text-[#14181f]">
             {/* HEADER */}
@@ -158,15 +313,30 @@ export default function PublicHomePage() {
                         </div>
 
                         <div className="mt-3 flex flex-wrap gap-2">
-                            {["Маркетинг", "IT и Разработка", "Финансы", "Инженерное дело", "Нефть и Газ"].map((t) => (
-                                <button
-                                    key={t}
-                                    className="rounded-full border border-[#e8ecf2] bg-white px-[10px] py-[7px] text-[12px] text-[#3b4453] transition hover:shadow-[0_10px_18px_rgba(16,24,40,.06)]"
-                                    type="button"
-                                >
-                                    {t}
-                                </button>
-                            ))}
+
+                            {isCategoriesLoading && (
+                                <span className="text-[12px] text-[#6b7280]">
+                                    Загрузка категорий...
+                                </span>
+                            )}
+
+                            {categoriesError && (
+                                <span className="text-[12px] text-red-500">
+                                    {categoriesError}
+                                </span>
+                            )}
+
+                            {!isCategoriesLoading &&
+                                !categoriesError &&
+                                categories.slice(0, 5).map((category) => (
+                                    <button
+                                        key={category}
+                                        className="rounded-full border border-[#e8ecf2] bg-white px-[10px] py-[7px] text-[12px] text-[#3b4453] transition hover:shadow-[0_10px_18px_rgba(16,24,40,.06)]"
+                                        type="button"
+                                    >
+                                        {category}
+                                    </button>
+                                ))}
                         </div>
 
                         <button
@@ -231,9 +401,18 @@ export default function PublicHomePage() {
 
                         <div className="mt-[14px] grid grid-cols-1 gap-3 md:grid-cols-3">
                             {[
-                                { label: "Вакансий", value: "10.265" },
-                                { label: "Новых вакансий", value: "3.265" },
-                                { label: "Работодателей", value: "8.365" },
+                                {
+                                    label: "Вакансий",
+                                    value: vacancyCount.toLocaleString("ru-RU"),
+                                },
+                                {
+                                    label: "Новых вакансий",
+                                    value: newVacancyCount.toLocaleString("ru-RU"),
+                                },
+                                {
+                                    label: "Работодателей",
+                                    value: employerCount.toLocaleString("ru-RU"),
+                                },
                             ].map((s) => (
                                 <div
                                     key={s.label}
@@ -405,24 +584,38 @@ export default function PublicHomePage() {
                         <h2 className="m-0 text-[14px] font-bold text-[#111827]">Работодатели партнёры</h2>
 
                         <div className="mt-3 grid grid-cols-2 gap-[10px] md:grid-cols-4 lg:grid-cols-7">
-                            {Array.from({ length: 7 }, (_, i) => (
-                                <div key={i} className="flex flex-col items-center gap-2 px-2 py-2">
+
+                            {visibleCompanies.map((companyName, index) => (
+                                <div
+                                    key={`${companyName}-${index}`}
+                                    className="flex flex-col items-center gap-2 px-2 py-2"
+                                >
                                     <div className="h-[44px] w-[44px] rounded-[10px] border border-black/5 bg-[#e5e7eb]" />
-                                    <div className="text-[11px] font-semibold text-[#6b7280]">Казатомпром</div>
+
+                                    <div className="text-[11px] font-semibold text-[#6b7280]">
+                                        {companyName}
+                                    </div>
                                 </div>
                             ))}
                         </div>
 
                         <div className="mt-2 flex items-center justify-center gap-3">
-                            <PartnerArrow dir="left" />
+                            <PartnerArrow dir="left" onClick={handlePrevCompanies} />
                             <div className="flex items-center gap-[6px] rounded-full px-3 py-2">
-                                <span className="h-[6px] w-[6px] rounded-full bg-[#cbd5e1]" />
-                                <span className="h-[7px] w-[7px] rounded-full bg-[#187dde]" />
-                                <span className="h-[6px] w-[6px] rounded-full bg-[#cbd5e1]" />
-                                <span className="h-[6px] w-[6px] rounded-full bg-[#cbd5e1]" />
-                                <span className="h-[6px] w-[6px] rounded-full bg-[#cbd5e1]" />
+                                {companyNames.map((companyName, index) => (
+                                    <button
+                                        key={`${companyName}-dot`}
+                                        onClick={() => setFirstCompanyIndex(index)}
+                                        className={
+                                            index === firstCompanyIndex
+                                                ? "h-[7px] w-[7px] rounded-full bg-[#187dde]"
+                                                : "h-[6px] w-[6px] rounded-full bg-[#cbd5e1]"
+                                        }
+                                        type="button"
+                                    />
+                                ))}
                             </div>
-                            <PartnerArrow dir="right" />
+                            <PartnerArrow dir="right" onClick={handleNextCompanies} />
                         </div>
                     </div>
                 </div>
@@ -439,9 +632,16 @@ export default function PublicHomePage() {
 
                         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
                             {[
-                                { big: "5.000+", small: "Доступных практик\nпо всему Казахстану" },
-                                { big: "1.200+", small: "Компаний\nпредлагают стажировки" },
-                                { big: "17", small: "Регионов\nпо всей стране" },
+                                {
+                                    big: vacancyCount.toLocaleString("ru-RU"),
+                                    small: "Доступных практик\nпо всему Казахстану" },
+                                { 
+                                    big: companyCount.toLocaleString("ru-RU"),
+                                    small: "Компаний\nпредлагают стажировки" },
+                                {
+                                    big: regionCount.toLocaleString("ru-RU"),
+                                    small: "Регионов\nпо всей стране",
+                                },
                                 { big: "24/7", small: "Поддержка\nдля студентов и компаний" },
                             ].map((n) => (
                                 <div key={n.big} className="relative overflow-hidden rounded-[16px] bg-[#187dde] px-4 py-[14px] text-white">
@@ -491,7 +691,7 @@ export default function PublicHomePage() {
                         <div className="w-full lg:w-[280px]">
                             <div className="text-[14px] font-black tracking-[-0.01em]">Практика</div>
                             <div className="mt-2 text-[12px] leading-[1.55] text-[#6b7280]">
-                                Единый портал практики и стажировок для студентов и выпускников Казахстана.
+                                Единый портал практики и стажировки для студентов и выпускников Казахстана.
                             </div>
                         </div>
 
@@ -531,12 +731,12 @@ export default function PublicHomePage() {
                                 </a>
                             </div>
                         </div>
-                   ы </div>
+                    </div>
 
                     <div className="mt-4 flex flex-col gap-3 border-t border-[#e8ecf2] pt-4 md:flex-row md:items-center md:justify-between">
                         <div className="text-[12px] text-[#6b7280]">© 2025 Практика. Все права защищены.</div>
                         <div className="flex flex-wrap gap-5">
-                   ы         {["Условия использования", "Политика конфиденциальности", "Карта сайта"].map((x) => (
+                            {["Условия использования", "Политика конфиденциальности", "Карта сайта"].map((x) => (
                                 <a key={x} href="#!" className="text-[12px] text-[#4b5563] hover:text-[#111827]">
                                     {x}
                                 </a>
