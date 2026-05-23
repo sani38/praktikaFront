@@ -15,7 +15,6 @@ import StudentContractsPage from "./student/pages/StudentContractsPage.jsx";
 import StudentContractDetailsPage from "./student/pages/StudentContractDetailsPage.jsx";
 import StudentResumeBuilderPage from "./student/pages/StudentResumeBuilderPage.jsx";
 import StudentDiaryPage from "./student/pages/StudentDiaryPage.jsx";
-
 import EmployerLayout from "./employer/EmployerLayout.jsx";
 import EmployerDashboardPage from "./employer/pages/EmployerDashboardPage.jsx";
 import EmployerVacanciesPage from "./employer/pages/EmployerVacanciesPage.jsx";
@@ -23,7 +22,6 @@ import EmployerCandidatesPage from "./employer/pages/EmployerCandidatesPage.jsx"
 import EmployerStudentDetailsPage from "./employer/pages/EmployerStudentDetailsPage.jsx";
 import EmployerSearchPage from "./employer/pages/EmployerSearchPage.jsx";
 import EmployerCreateVacancyPage from "./employer/pages/EmployerCreateVacancyPage.jsx";
-
 import CareerLayout from "./career/CareerLayout.jsx";
 import CareerDashboardPage from "./career/pages/CareerDashboardPage.jsx";
 import CareerStudentsPage from "./career/pages/CareerStudentsPage.jsx";
@@ -32,14 +30,12 @@ import CareerContractsPage from "./career/pages/CareerContractsPage.jsx";
 import CareerDiaryPage from "./career/pages/CareerDiaryPage.jsx";
 import CareerContractDetailsPage from "./career/pages/CareerContractDetailsPage.jsx";
 import CareerDiaryDetailsPage from "./career/pages/CareerDiaryDetailsPage.jsx";
-
 import AdminLayout from "./admin/AdminLayout.jsx";
 import AdminDashboardPage from "./admin/pages/AdminDashboardPage.jsx";
 import AdminUsersPage from "./admin/pages/AdminUsersPage.jsx";
 import AdminApprovalsPage from "./admin/pages/AdminApprovalsPage.jsx";
 import AdminLogsPage from "./admin/pages/AdminLogsPage.jsx";
 import AdminSettingsPage from "./admin/pages/AdminSettingsPage.jsx";
-
 export default function App() {
     return (
         <BrowserRouter>
