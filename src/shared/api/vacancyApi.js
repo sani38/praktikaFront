@@ -11,3 +11,7 @@ export function getNewVacancyCount() {
 export function getFilteredVacancies(request) {
     return httpPost("/api/Vacancy/filtered", request);
 }
+
+export function getVacancyDetails(id) {
+    return httpGet(`/api/Vacancy/details?id=${encodeURIComponent(id)}`);
+}
