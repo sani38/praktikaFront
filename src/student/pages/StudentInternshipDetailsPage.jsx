@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Pill, IconPin, IconCalendar, IconClock, IconBriefcase } from "../ui/Ui.jsx";
 import { getVacancyDetails } from "../../shared/api/vacancyApi.js";
+import { createApplication } from "../../shared/api/applicationApi.js";
+import { ResultToast } from "../../shared/ui/ResultToast.jsx";
 
 function Chip({ children }) {
     return (
@@ -25,9 +27,43 @@ export default function StudentInternshipDetailsPage() {
     const navigate = useNavigate();
     const { id } = useParams();
 
+    const [toast, setToast] = useState({
+        isOpen: false,
+        type: "success",
+        title: "",
+        message: "",
+    });
+
     const [item, setItem] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    async function handleApply() {
+        try {
+            await createApplication(item.vacancyId);
+
+            setItem((prev) => ({
+                ...prev,
+                hasApplied: true,
+            }));
+
+            setToast({
+                isOpen: true,
+                type: "success",
+                title: "Отклик отправлен",
+                message: "Ваша заявка успешно отправлена работодателю.",
+            });
+        } catch (error) {
+            console.error("Ошибка отклика:", error);
+
+            setToast({
+                isOpen: true,
+                type: "error",
+                title: "Ошибка отправки",
+                message: "Не удалось отправить заявку.",
+            });
+        }
+    }
 
     useEffect(() => {
         async function loadDetails() {
@@ -160,14 +196,31 @@ export default function StudentInternshipDetailsPage() {
 
                         <button
                             type="button"
-                            className="h-10 rounded-xl bg-[#1677ff] px-5 text-[12px] font-semibold text-white hover:bg-[#0f66e6] transition"
-                            onClick={() => alert(`Отклик отправлен: ${item.jobTitle}`)}
+                            disabled={item.hasApplied}
+                            className={
+                                item.hasApplied
+                                    ? "h-10 cursor-not-allowed rounded-xl bg-gray-200 px-5 text-[12px] font-semibold text-gray-500"
+                                    : "h-10 rounded-xl bg-[#1677ff] px-5 text-[12px] font-semibold text-white hover:bg-[#0f66e6] transition"
+                            }
+                            onClick={handleApply}
                         >
-                            Откликнуться
+                            {item.hasApplied ? "Отклик отправлен" : "Откликнуться"}
                         </button>
                     </div>
                 </div>
             </div>
+            <ResultToast
+                isOpen={toast.isOpen}
+                type={toast.type}
+                title={toast.title}
+                message={toast.message}
+                onClose={() =>
+                    setToast((prev) => ({
+                        ...prev,
+                        isOpen: false,
+                    }))
+                }
+            />
         </div>
     );
 }

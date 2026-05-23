@@ -5,6 +5,8 @@ import { getRegionNameDtos } from "../../shared/api/regionApi.js";
 import { getPaymentTypeNameDtos } from "../../shared/api/paymentTypeApi.js";
 import { getVacancyCategoryNameDtos } from "../../shared/api/vacancyCategoryApi.js";
 import { getFilteredVacancies } from "../../shared/api/vacancyApi.js";
+import { createApplication } from "../../shared/api/applicationApi.js";
+import { ResultToast } from "../../shared/ui/ResultToast.jsx";
 
 function Select({ value, onChange, children, w = "min-w-[92px]" }) {
     return (
@@ -18,7 +20,7 @@ function Select({ value, onChange, children, w = "min-w-[92px]" }) {
     );
 }
 
-function InternshipCard({ x, onOpen }) {
+function InternshipCard({ x, onOpen, onApply }) {
     const statusVariant = x.status === "Опубликовано" ? "green" : "blue";
 
     const createdDate = x.createdAt
@@ -93,13 +95,21 @@ function InternshipCard({ x, onOpen }) {
 
                 <button
                     type="button"
-                    className="h-9 rounded-xl bg-[#1677ff] px-4 text-[12px] font-semibold text-white hover:bg-[#0f66e6] transition"
+                    disabled={x.hasApplied}
+                    className={
+                        x.hasApplied
+                            ? "h-9 cursor-not-allowed rounded-xl bg-gray-200 px-4 text-[12px] font-semibold text-gray-500"
+                            : "h-9 rounded-xl bg-[#1677ff] px-4 text-[12px] font-semibold text-white hover:bg-[#0f66e6] transition"
+                    }
                     onClick={(e) => {
                         e.stopPropagation();
-                        alert(`Отклик отправлен: ${x.jobTitle}`);
+
+                        if (!x.hasApplied) {
+                            onApply(x.vacancyId);
+                        }
                     }}
                 >
-                    Откликнуться
+                    {x.hasApplied ? "Отклик отправлен" : "Откликнуться"}
                 </button>
             </div>
         </div>
@@ -112,6 +122,13 @@ export default function StudentInternshipsPage() {
 
     const [q, setQ] = useState("");
     const [page, setPage] = useState(1);
+
+    const [toast, setToast] = useState({
+        isOpen: false,
+        type: "success",
+        title: "",
+        message: "",
+    });
 
     const [regionId, setRegionId] = useState("");
     const [paymentTypeId, setPaymentTypeId] = useState("");
@@ -171,6 +188,36 @@ export default function StudentInternshipsPage() {
             setError("Не удалось загрузить практики");
         } finally {
             setIsLoading(false);
+        }
+    }
+
+    async function handleApply(vacancyId) {
+        try {
+            await createApplication(vacancyId);
+
+            setItems((prev) =>
+                prev.map((item) =>
+                    item.vacancyId === vacancyId
+                        ? { ...item, hasApplied: true }
+                        : item
+                )
+            );
+
+            setToast({
+                isOpen: true,
+                type: "success",
+                title: "Отклик отправлен",
+                message: "Ваша заявка успешно отправлена работодателю.",
+            });
+        } catch (error) {
+            console.error("Ошибка отклика:", error);
+
+            setToast({
+                isOpen: true,
+                type: "error",
+                title: "Ошибка отправки",
+                message: "Не удалось отправить заявку.",
+            });
         }
     }
 
@@ -291,11 +338,24 @@ export default function StudentInternshipsPage() {
                         key={x.vacancyId}
                         x={x}
                         onOpen={() => navigate(`/student/internships/${x.vacancyId}`)}
+                        onApply={handleApply}
                     />
                 ))}
             </div>
 
             <Pagination page={safePage} totalPages={totalPages} onPage={(nextPage) => { setPage(nextPage); loadInternships(nextPage); }}/>
+            <ResultToast
+                isOpen={toast.isOpen}
+                type={toast.type}
+                title={toast.title}
+                message={toast.message}
+                onClose={() =>
+                    setToast((prev) => ({
+                        ...prev,
+                        isOpen: false,
+                    }))
+                }
+            />
         </div>
     );
 }

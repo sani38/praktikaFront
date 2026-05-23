@@ -1,10 +1,21 @@
 const API_BASE_URL = "https://localhost:7149";
 
+function getAuthHeaders() {
+    const token = localStorage.getItem("token");
+
+    return token
+        ? {
+              Authorization: `Bearer ${token}`,
+          }
+        : {};
+}
+
 export async function httpGet(path) {
     const response = await fetch(`${API_BASE_URL}${path}`, {
         method: "GET",
         headers: {
             Accept: "application/json",
+            ...getAuthHeaders(),
         },
     });
 
@@ -15,18 +26,21 @@ export async function httpGet(path) {
     return response.json();
 }
 
-export async function httpPost(url, body) {
+export async function httpPost(url, body = null) {
     const response = await fetch(`${API_BASE_URL}${url}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
+            ...getAuthHeaders(),
         },
-        body: JSON.stringify(body),
+        body: body ? JSON.stringify(body) : null,
     });
 
     if (!response.ok) {
         throw new Error(`HTTP error ${response.status}`);
     }
 
-    return response.json();
+    const text = await response.text();
+
+    return text ? JSON.parse(text) : null;
 }
