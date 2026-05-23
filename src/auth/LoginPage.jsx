@@ -32,7 +32,7 @@ export default function LoginPage() {
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
-        login: "",
+        email: "",
         password: "",
     });
 
@@ -45,29 +45,46 @@ export default function LoginPage() {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
 
-        const user = USERS.find(
-            (item) =>
-                item.login === form.login &&
-                item.password === form.password
-        );
+        try {
+            const response = await fetch("https://localhost:7149/api/Access/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: form.email,
+                    password: form.password,
+                }),
+            });
 
-        if (!user) {
-            setError("Неверный логин или пароль");
-            return;
+            if (!response.ok) {
+                setError("Неверная почта или пароль");
+                return;
+            }
+
+            const data = await response.json();
+
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("roleCode", data.roleCode);
+
+            if (data.roleCode === "admin") {
+                navigate("/admin");
+            } else if (data.roleCode === "student") {
+                navigate("/student");
+            } else if (data.roleCode === "employer") {
+                navigate("/employer");
+            } else if (data.roleCode === "university_staff") {
+                navigate("/career");
+            } else {
+                navigate("/");
+            }
+        } catch {
+            setError("Ошибка сервера");
         }
-
-        localStorage.setItem(
-            "authUser",
-            JSON.stringify({
-                login: user.login,
-                role: user.role,
-            })
-        );
-
-        navigate(user.redirect);
     };
 
     return (
@@ -84,15 +101,15 @@ export default function LoginPage() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Логин
+                            Почта
                         </label>
 
                         <input
-                            type="text"
-                            name="login"
-                            value={form.login}
+                            type="email"
+                            name="email"
+                            value={form.email}
                             onChange={handleChange}
-                            placeholder="Введите логин"
+                            placeholder="Введите почту"
                             className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
                         />
                     </div>
