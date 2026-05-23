@@ -14,3 +14,19 @@ export async function httpGet(path) {
 
     return response.json();
 }
+
+export async function httpPost(url, body) {
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+    }
+
+    return response.json();
+}

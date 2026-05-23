@@ -1,5 +1,5 @@
 import { httpGet } from "./httpClient";
 
-export function getVacancyCategoryNames(lang = "ru") {
-    return httpGet(`/api/VacancyCategory/names?lang=${lang}`);
+export function getVacancyCategoryNameDtos(lang = "ru") {
+    return httpGet(`/api/VacancyCategory/name-dtos?lang=${lang}`);
 }

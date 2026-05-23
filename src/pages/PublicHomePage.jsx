@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getVacancyCategoryNames } from "../shared/api/vacancyCategoryApi";
+import { getVacancyCategoryNameDtos } from "../shared/api/vacancyCategoryApi";
 import {
     getVacancyCount,
     getNewVacancyCount,
@@ -105,10 +105,11 @@ export default function PublicHomePage() {
     const [categories, setCategories] = useState([]);
     const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
     const [categoriesError, setCategoriesError] = useState(null);
-    const [vacancyCount, setVacancyCount] = useState(0);
-    const [newVacancyCount, setNewVacancyCount] = useState(0);
-    const [employerCount, setEmployerCount] = useState(0);
-    const [regionCount, setRegionCount] = useState(0);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [vacancyCount, setVacancyCount] = useState(null);
+    const [newVacancyCount, setNewVacancyCount] = useState(null);
+    const [employerCount, setEmployerCount] = useState(null);
+    const [regionCount, setRegionCount] = useState(null);
 
     const [companyNames, setCompanyNames] = useState([]);
     const [firstCompanyIndex, setFirstCompanyIndex] = useState(0);
@@ -118,7 +119,7 @@ export default function PublicHomePage() {
         return companyNames[companyIndex];
     });
 
-    const [companyCount, setCompanyCount] = useState(0);
+    const [companyCount, setCompanyCount] = useState(null);
 
     function handlePrevCompanies() {
         if (companyNames.length === 0) return;
@@ -136,13 +137,36 @@ export default function PublicHomePage() {
         );
     }
 
+    function handleSearch() {
+        const query = searchQuery.trim();
+
+        if (!query) {
+            navigate("/student/internships");
+            return;
+        }
+
+        navigate(`/student/internships?query=${encodeURIComponent(query)}`);
+    }
+
+    function handleCategoryClick(categoryId) {
+        const params = new URLSearchParams();
+
+        if (searchQuery.trim()) {
+            params.set("query", searchQuery.trim());
+        }
+
+        params.set("categoryId", categoryId);
+
+        navigate(`/student/internships?${params.toString()}`);
+    }
+
     useEffect(() => {
         async function loadCategories() {
             try {
                 setIsCategoriesLoading(true);
                 setCategoriesError(null);
 
-                const data = await getVacancyCategoryNames("ru");
+                const data = await getVacancyCategoryNameDtos("ru");
 
                 setCategories(data);
             } catch (error) {
@@ -297,6 +321,8 @@ export default function PublicHomePage() {
                         <div className="mt-[18px] flex max-w-[520px] items-center gap-[10px]">
                             <div className="flex-1 rounded-[12px] border border-[#e8ecf2] bg-white px-[12px] py-[10px] shadow-[0_10px_24px_rgba(16,24,40,.06)]">
                                 <input
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full border-0 bg-transparent text-[13px] text-[#111827] outline-none"
                                     type="text"
                                     placeholder="Какую практику вы ищете?"
@@ -304,6 +330,7 @@ export default function PublicHomePage() {
                             </div>
 
                             <button
+                                onClick={handleSearch}
                                 className="inline-flex h-[44px] items-center gap-2 rounded-[12px] bg-[#187dde] px-[14px] text-[14px] font-semibold text-white shadow-[0_10px_18px_rgba(24,125,222,.20)] transition hover:bg-[#1f86e7] active:translate-y-[1px]"
                                 type="button"
                             >
@@ -330,17 +357,18 @@ export default function PublicHomePage() {
                                 !categoriesError &&
                                 categories.slice(0, 5).map((category) => (
                                     <button
-                                        key={category}
+                                        key={category.id}
+                                        onClick={() => handleCategoryClick(category.id)}
                                         className="rounded-full border border-[#e8ecf2] bg-white px-[10px] py-[7px] text-[12px] text-[#3b4453] transition hover:shadow-[0_10px_18px_rgba(16,24,40,.06)]"
                                         type="button"
                                     >
-                                        {category}
+                                        {category.name}
                                     </button>
                                 ))}
                         </div>
 
                         <button
-                            onClick={() => navigate("/student")}
+                            onClick={() => navigate("/student/internships")}
                             className="mt-[14px] inline-flex items-center gap-2 rounded-[10px] border border-[#187dde]/20 bg-[#e9f2ff] px-[14px] py-[10px] text-[14px] font-semibold text-[#187dde] transition hover:shadow-[0_10px_18px_rgba(16,24,40,.06)] active:translate-y-[1px]"
                             type="button"
                         >
@@ -403,15 +431,21 @@ export default function PublicHomePage() {
                             {[
                                 {
                                     label: "Вакансий",
-                                    value: vacancyCount.toLocaleString("ru-RU"),
+                                    value: vacancyCount === null
+                                        ? "..."
+                                        : vacancyCount.toLocaleString("ru-RU"),
                                 },
                                 {
                                     label: "Новых вакансий",
-                                    value: newVacancyCount.toLocaleString("ru-RU"),
+                                    value: newVacancyCount === null
+                                        ? "..."
+                                        : newVacancyCount.toLocaleString("ru-RU"),
                                 },
                                 {
                                     label: "Работодателей",
-                                    value: employerCount.toLocaleString("ru-RU"),
+                                    value: employerCount === null
+                                        ? "..."
+                                        : employerCount.toLocaleString("ru-RU"),
                                 },
                             ].map((s) => (
                                 <div
@@ -633,18 +667,27 @@ export default function PublicHomePage() {
                         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
                             {[
                                 {
-                                    big: vacancyCount.toLocaleString("ru-RU"),
-                                    small: "Доступных практик\nпо всему Казахстану" },
-                                { 
-                                    big: companyCount.toLocaleString("ru-RU"),
-                                    small: "Компаний\nпредлагают стажировки" },
+                                    key: "vacancies",
+                                    big: vacancyCount === null ? "..." : vacancyCount.toLocaleString("ru-RU"),
+                                    small: "Доступных практик\nпо всему Казахстану",
+                                },
                                 {
-                                    big: regionCount.toLocaleString("ru-RU"),
+                                    key: "companies",
+                                    big: companyCount === null ? "..." : companyCount.toLocaleString("ru-RU"),
+                                    small: "Компаний\nпредлагают стажировки",
+                                },
+                                {
+                                    key: "regions",
+                                    big: regionCount === null ? "..." : regionCount.toLocaleString("ru-RU"),
                                     small: "Регионов\nпо всей стране",
                                 },
-                                { big: "24/7", small: "Поддержка\nдля студентов и компаний" },
+                                {
+                                    key: "support",
+                                    big: "24/7",
+                                    small: "Поддержка\nдля студентов и компаний",
+                                },
                             ].map((n) => (
-                                <div key={n.big} className="relative overflow-hidden rounded-[16px] bg-[#187dde] px-4 py-[14px] text-white">
+                                <div key={n.key} className="relative overflow-hidden rounded-[16px] bg-[#187dde] px-4 py-[14px] text-white">
                                     <div className="absolute -right-12 -top-12 h-[160px] w-[160px] rounded-full bg-white/15" />
                                     <div className="relative text-[22px] font-black tracking-[-0.02em]">{n.big}</div>
                                     <div className="relative mt-2 whitespace-pre-line text-[11.5px] leading-[1.35] text-white/95">
