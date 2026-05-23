@@ -97,7 +97,7 @@ export default function StudentInternshipDetailsPage() {
                 </div>
 
                 <div className="mt-4 text-[12px] leading-6 text-black/60">
-                    {item.fullDescription}
+                    {item.shortDescription}
                 </div>
 
                 <div className="mt-4 rounded-xl bg-black/[0.03] p-4">
@@ -139,6 +139,10 @@ export default function StudentInternshipDetailsPage() {
                         </div>
                     </div>
                 )}
+
+                <div className="mt-4 text-[12px] leading-6 text-black/60">
+                    {item.fullDescription}
+                </div>
 
                 <div className="mt-6 flex items-center justify-between gap-3">
                     <div className="text-[11px] text-black/35">
