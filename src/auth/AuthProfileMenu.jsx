@@ -1,0 +1,89 @@
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const ROLE_INFO = {
+    student: { title: "Студент", home: "/student", name: "Студент Satbayev University" },
+    employer: { title: "Работодатель", home: "/employer", name: "Работодатель" },
+    career: { title: "Центр карьеры", home: "/career", name: "Сотрудник центра карьеры" },
+    admin: { title: "Администратор", home: "/admin", name: "Администратор системы" },
+};
+
+export default function AuthProfileMenu() {
+    const navigate = useNavigate();
+    const [open, setOpen] = useState(false);
+
+    const authUser = useMemo(() => {
+        try {
+            return JSON.parse(localStorage.getItem("authUser"));
+        } catch {
+            return null;
+        }
+    }, []);
+
+    const info = ROLE_INFO[authUser?.role] || { title: "Пользователь", home: "/login", name: "Пользователь" };
+
+    const handleCabinet = () => {
+        setOpen(false);
+        navigate(info.home);
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem("authUser");
+        setOpen(false);
+        navigate("/login");
+    };
+
+    return (
+        <div className="relative">
+            <button
+                type="button"
+                onClick={() => setOpen((value) => !value)}
+                className="inline-flex items-center gap-2 rounded-lg bg-[#f1f5ff] px-3 py-2 text-[12px] font-medium text-[#1f66ff] hover:bg-[#e9f0ff] transition"
+            >
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#1677ff] text-[11px] font-bold text-white">
+                    {info.title.slice(0, 1)}
+                </span>
+                <span>Мой кабинет</span>
+                <svg viewBox="0 0 24 24" fill="none" className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} aria-hidden="true">
+                    <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            </button>
+
+            {open && (
+                <div className="absolute right-0 top-[calc(100%+10px)] z-50 w-72 overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.14)]">
+                    <div className="border-b border-black/5 p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1677ff] text-sm font-bold text-white">
+                                {info.title.slice(0, 1)}
+                            </div>
+                            <div>
+                                <div className="text-[13px] font-semibold text-black/80">{info.name}</div>
+                                <div className="mt-0.5 text-[11px] text-black/45">Роль: {info.title}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-2">
+                        <button
+                            type="button"
+                            onClick={handleCabinet}
+                            className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-[12px] font-medium text-black/70 hover:bg-[#f6f7fb] transition"
+                        >
+                            <span>Перейти в кабинет</span>
+                            <span>→</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-[12px] font-medium text-red-600 hover:bg-red-50 transition"
+                        >
+                            <span>Выйти из аккаунта</span>
+                            <span>↗</span>
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
