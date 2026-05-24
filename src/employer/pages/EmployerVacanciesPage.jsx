@@ -1,6 +1,6 @@
-﻿import React, { useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { Pill, SmallIconButton, IconEye, IconEdit, IconTrash } from "../ui/EmployerUi.jsx";
-
+import { getMyVacancies, deleteVacancy  } from "../../shared/api/employerApi.js";
 function Tab({ active, children, onClick }) {
     return (
         <button
@@ -14,21 +14,24 @@ function Tab({ active, children, onClick }) {
     );
 }
 
-function VacancyCard({ v }) {
+function VacancyCard({ v, onDelete }) {
     return (
         <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
             <div className="flex items-start justify-between gap-4">
                 <Pill variant={v.statusVariant}>{v.status}</Pill>
                 <div className="flex items-center gap-2">
-                    <SmallIconButton title="Скрыть/Показать" variant="blue" onClick={() => alert("toggle (демо)")}>
-                        <IconEye />
-                    </SmallIconButton>
+                    
                     <SmallIconButton title="Редактировать" variant="blue" onClick={() => alert("edit (демо)")}>
                         <IconEdit />
                     </SmallIconButton>
-                    <SmallIconButton title="Удалить" variant="red" onClick={() => alert("delete (демо)")}>
+                    <SmallIconButton
+                        title="Удалить"
+                        variant="red"
+                        onClick={() => onDelete(v.id)}
+                    >
                         <IconTrash />
                     </SmallIconButton>
+
                 </div>
             </div>
 
@@ -74,98 +77,125 @@ function VacancyCard({ v }) {
 }
 
 export default function EmployerVacanciesPage() {
-    const tabs = ["Все вакансии", "Опубликованные", "Скрытые"];
+    const tabs = [
+    "Все вакансии",
+    "Опубликованные",
+    "Черновики",
+    "Удалённые",
+];
     const [tab, setTab] = useState(tabs[0]);
 
-    const data = useMemo(
-        () => [
-            {
-                id: 1,
-                status: "На рассмотрении",
-                statusVariant: "blue",
-                title: "Стажировка в IT-отделе",
-                tags: ["IT", "Программирование", "Удаленно"],
-                desc:
-                    "Стажировка в IT-отделе компании ТехноСервис. Работа с современными технологиями, участие в разработке веб-приложений.",
-                candidates: 12,
-                duration: "3 месяца",
-                date: "10.04.2025",
-                type: "all",
-            },
-            {
-                id: 2,
-                status: "Отклонено",
-                statusVariant: "red",
-                title: "Стажировка в IT-отделе",
-                tags: ["IT", "Программирование", "Удаленно"],
-                desc:
-                    "Стажировка в IT-отделе компании ТехноСервис. Работа с современными технологиями, участие в разработке веб-приложений.",
-                candidates: 12,
-                duration: "3 месяца",
-                date: "10.04.2025",
-                type: "hidden",
-            },
-            {
-                id: 3,
-                status: "Опубликовано",
-                statusVariant: "green",
-                title: "Стажировка в маркетинге",
-                tags: ["IT", "Программирование", "Удаленно"],
-                desc:
-                    "Стажировка в маркетинговом отделе компании БрендМастер. Изучение стратегии продвижения и анализа рынка.",
-                candidates: 12,
-                duration: "3 месяца",
-                date: "10.04.2025",
-                type: "published",
-            },
-            {
-                id: 4,
-                status: "Опубликовано",
-                statusVariant: "green",
-                title: "Ассистент по продажам",
-                tags: ["Торговля", "Коммуникации", "Офис"],
-                desc:
-                    "Помощь в управлении клиентскими отношениями и поддержка команды продаж.",
-                candidates: 8,
-                duration: "6 месяцев",
-                date: "15.04.2025",
-                type: "published",
-            },
-            {
-                id: 5,
-                status: "Опубликовано",
-                statusVariant: "green",
-                title: "Дизайнер пользовательского интерфейса",
-                tags: ["Дизайн", "Графика", "Удаленно"],
-                desc:
-                    "Разработка дизайн-концептов для веб-приложений и мобильных интерфейсов.",
-                candidates: 10,
-                duration: "4 месяца",
-                date: "20.04.2025",
-                type: "published",
-            },
-            {
-                id: 6,
-                status: "Опубликовано",
-                statusVariant: "green",
-                title: "Дизайнер пользовательского интерфейса",
-                tags: ["Дизайн", "Графика", "Удаленно"],
-                desc:
-                    "Разработка дизайн-концептов для веб-приложений и мобильных интерфейсов.",
-                candidates: 10,
-                duration: "4 месяца",
-                date: "20.04.2025",
-                type: "published",
-            },
-        ],
-        []
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    
+    useEffect(() => {
+    async function loadVacancies() {
+        try {
+            const response = await getMyVacancies();
+
+            console.log(response);
+
+            const statusMap = {
+                active: {
+                    text: "Опубликовано",
+                    variant: "green",
+                    type: "published",
+                },
+
+                draft: {
+                    text: "Черновик",
+                    variant: "blue",
+                    type: "draft",
+                },
+
+                deleted: {
+                    text: "Удалено",
+                    variant: "red",
+                    type: "hidden",
+                },
+            };
+
+            const mapped = response.map((x) => {
+                const status = statusMap[x.vacancyStatusCode] ?? {
+                    text: "Неизвестно",
+                    variant: "gray",
+                    type: "all",
+                };
+
+                return {
+                    id: x.vacancyId,
+
+                    status: status.text,
+
+                    statusVariant: status.variant,
+
+                    title:
+                        x.vacancyNameRu ||
+                        x.vacancyNameKk ||
+                        x.vacancyNameEn,
+
+                    tags: [],
+
+                    desc: x.description,
+
+                    candidates: x.responses,
+
+                    duration: "",
+
+                    date: new Date(x.startDate).toLocaleDateString("ru-RU"),
+
+                    type: status.type,
+                };
+            });
+
+            setData(mapped);
+        } catch (error) {
+            console.error("Ошибка загрузки вакансий:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    loadVacancies();
+    }, []);
+    
+    const handleDelete = async (vacancyId) => {
+    const confirmed = window.confirm(
+        "Вы уверены, что хотите удалить вакансию?"
     );
 
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        await deleteVacancy(vacancyId);
+
+        setData((prev) =>
+            prev.filter((x) => x.id !== vacancyId)
+        );
+
+        alert("Вакансия удалена");
+    } catch (error) {
+        console.error("Ошибка удаления вакансии:", error);
+
+        alert("Не удалось удалить вакансию");
+    }
+};
+
     const filtered = useMemo(() => {
-        if (tab === "Все вакансии") return data;
-        if (tab === "Опубликованные") return data.filter((x) => x.type === "published");
-        return data.filter((x) => x.type === "hidden");
-    }, [tab, data]);
+    if (tab === "Все вакансии") return data;
+
+    if (tab === "Опубликованные") {
+        return data.filter((x) => x.type === "published");
+    }
+
+    if (tab === "Черновики") {
+        return data.filter((x) => x.type === "draft");
+    }
+
+    return data.filter((x) => x.type === "hidden");
+}, [tab, data]);
 
     return (
         <div className="py-10">
@@ -196,7 +226,11 @@ export default function EmployerVacanciesPage() {
 
             <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                 {filtered.map((v) => (
-                    <VacancyCard key={v.id} v={v} />
+                    <VacancyCard
+                        key={v.id}
+                        v={v}
+                        onDelete={handleDelete}
+                    />
                 ))}
             </div>
 

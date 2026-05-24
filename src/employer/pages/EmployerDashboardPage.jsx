@@ -212,7 +212,7 @@ export default function EmployerDashboardPage() {
                 <ActionCard title="Мои вакансии" desc="Управление размещенными вакансиями" onClick={() => (window.location.href = "/employer/vacancies")} />
                 <ActionCard title="Кандидаты" desc="Просмотр и управление заявками на практику" onClick={() => (window.location.href = "/employer/candidates")} />
                 <ActionCard title="Поиск соискателей" desc="Поиск студентов для прохождения практики" onClick={() => alert("Скоро")} />
-                <ActionCard title="Создать вакансию" desc="Опубликовать новую вакансию для практики" onClick={() => alert("Скоро")} />
+                <ActionCard title="Создать вакансию" desc="Опубликовать новую вакансию для практики" onClick={() => (window.location.href = "/employer/create")} />
             </div>
 
             <div className="mt-8 text-[14px] font-semibold text-black/75">Дневники практик</div>
