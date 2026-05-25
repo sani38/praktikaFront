@@ -143,16 +143,16 @@ export default function LoginPage() {
                     </button>
                 </form>
 
-                <div className="mt-8 rounded-2xl bg-slate-100 p-4 text-sm text-slate-700">
-                    <p className="font-semibold mb-2">Тестовые аккаунты:</p>
+                {/*<div className="mt-8 rounded-2xl bg-slate-100 p-4 text-sm text-slate-700">*/}
+                {/*    <p className="font-semibold mb-2">Тестовые аккаунты:</p>*/}
 
-                    <ul className="space-y-1">
-                        <li>student / 123456</li>
-                        <li>employer / 123456</li>
-                        <li>career / 123456</li>
-                        <li>admin / 123456</li>
-                    </ul>
-                </div>
+                {/*    <ul className="space-y-1">*/}
+                {/*        <li>student / 123456</li>*/}
+                {/*        <li>employer / 123456</li>*/}
+                {/*        <li>career / 123456</li>*/}
+                {/*        <li>admin / 123456</li>*/}
+                {/*    </ul>*/}
+                {/*</div>*/}
             </div>
         </div>
     );

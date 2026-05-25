@@ -20,6 +20,28 @@ export function getApplicationsByStatus(statusCode, lang = "ru", page = 1, pageS
     return httpGet(`/api/Application/by-status?${params.toString()}`);
 }
 
+export function getEmployerApplications(statusCode, lang = "ru", page = 1, pageSize = 10) {
+    const params = new URLSearchParams();
+
+    if (statusCode) {
+        params.append("statusCode", statusCode);
+    }
+
+    params.append("lang", lang);
+    params.append("page", String(page));
+    params.append("pageSize", String(pageSize));
+
+    return httpGet(`/api/Application/employer?${params.toString()}`);
+}
+
+export function approveApplication(applicationId) {
+    return httpPost(`/api/Application/${applicationId}/approve`);
+}
+
+export function rejectApplication(applicationId) {
+    return httpPost(`/api/Application/${applicationId}/reject`);
+}
+
 export function withdrawApplication(applicationId) {
     return httpPost(`/api/Application/${applicationId}/withdraw`);
 }

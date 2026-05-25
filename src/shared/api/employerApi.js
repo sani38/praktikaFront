@@ -3,6 +3,9 @@ import { httpGet, httpPost } from "./httpClient";
 export function getEmployerCount() {
     return httpGet("/api/Employer/count");
 }
+export function getEmployerCabinetStats() {
+    return httpGet("/api/Employer/stat-employer-cabinet");
+}
 export function getDataForCreateVacancy() {
     return httpGet("/api/Employer/data-for-create-vacancy");
 }

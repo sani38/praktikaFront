@@ -10,6 +10,27 @@ function getAuthHeaders() {
         : {};
 }
 
+async function handleResponse(response) {
+    const text = await response.text();
+
+    if (!response.ok) {
+        let message = `HTTP error: ${response.status}`;
+
+        if (text) {
+            try {
+                const errorBody = JSON.parse(text);
+                message = errorBody.detail || errorBody.title || message;
+            } catch {
+                message = text;
+            }
+        }
+
+        throw new Error(message);
+    }
+
+    return text ? JSON.parse(text) : null;
+}
+
 export async function httpGet(path) {
     const response = await fetch(`${API_BASE_URL}${path}`, {
         method: "GET",
