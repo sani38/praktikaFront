@@ -10,27 +10,6 @@ function getAuthHeaders() {
         : {};
 }
 
-async function handleResponse(response) {
-    const text = await response.text();
-
-    if (!response.ok) {
-        let message = `HTTP error: ${response.status}`;
-
-        if (text) {
-            try {
-                const errorBody = JSON.parse(text);
-                message = errorBody.detail || errorBody.title || message;
-            } catch {
-                message = text;
-            }
-        }
-
-        throw new Error(message);
-    }
-
-    return text ? JSON.parse(text) : null;
-}
-
 export async function httpGet(path) {
     const response = await fetch(`${API_BASE_URL}${path}`, {
         method: "GET",
@@ -45,6 +24,47 @@ export async function httpGet(path) {
     }
 
     return response.json();
+}
+
+export async function httpGetBlob(path) {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+        method: "GET",
+        headers: {
+            Accept: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ...getAuthHeaders(),
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+
+    const contentDisposition = response.headers.get("content-disposition");
+
+    let fileName = "contract.docx";
+
+    if (contentDisposition) {
+        const utf8FileNameMatch = contentDisposition.match(
+            /filename\*=UTF-8''([^;]+)/
+        );
+
+        const defaultFileNameMatch = contentDisposition.match(
+            /filename="?([^";]+)"?/
+        );
+
+        if (utf8FileNameMatch?.[1]) {
+            fileName = decodeURIComponent(utf8FileNameMatch[1]);
+        } else if (defaultFileNameMatch?.[1]) {
+            fileName = defaultFileNameMatch[1];
+        }
+    }
+
+    return {
+        blob,
+        fileName,
+    };
 }
 
 export async function httpPost(url, body = null) {
