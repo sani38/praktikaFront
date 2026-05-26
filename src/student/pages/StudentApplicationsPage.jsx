@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Pill, Pagination, IconPin, IconCalendar, IconClock, IconBriefcase } from "../ui/Ui.jsx";
 import { getApplicationsByStatus, withdrawApplication } from "../../shared/api/applicationApi.js";
 import { ResultToast } from "../../shared/ui/ResultToast.jsx";
@@ -110,6 +111,7 @@ function AppCard({ x, onWithdraw, onSign }) {
 }
 
 export default function StudentApplicationsPage() {
+    const navigate = useNavigate();
     const [tab, setTab] = useState("Все заявки");
     const [page, setPage] = useState(1);
     const [apps, setApps] = useState([]);
@@ -151,11 +153,8 @@ export default function StudentApplicationsPage() {
         }
     };
 
-    const onSign = (id) => {
-        const item = apps.find((x) => x.applicationId === id);
-        if (!item) return;
-        alert(`Договор подписан (демо): ${item.jobTitle}`);
-        setApps((p) => p.map((x) => (x.applicationId === id ? { ...x, canSign: false, decision: "Одобрено" } : x)));
+    const onSign = () => {
+        navigate("/student/contracts");
     };
 
     async function loadApplications(targetTab = tab) {
