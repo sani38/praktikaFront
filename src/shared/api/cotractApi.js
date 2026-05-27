@@ -36,3 +36,27 @@ export function downloadContract(contractId, lang = "ru") {
         `/api/Contract/download?contractId=${contractId}&lang=${lang}`
     );
 }
+
+export function getContractSignData(
+    contractId,
+    lang = "ru"
+) {
+    return httpGet(
+        `/api/Contract/sign-data?contractId=${contractId}&lang=${lang}`
+    );
+}
+
+export function signContract(
+    contractId,
+    signature,
+    lang = "ru"
+) {
+    return httpPost(
+        `/api/Contract/sign`,
+        {
+            contractId,
+            signature,
+            lang,
+        }
+    );
+}

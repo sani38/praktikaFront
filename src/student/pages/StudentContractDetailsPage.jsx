@@ -1,8 +1,13 @@
 ﻿import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Pill } from "../ui/Ui.jsx";
-import { getContractDetails, downloadContract } from "../../shared/api/cotractApi.js";
+import { getContractDetails, 
+    downloadContract, 
+    getContractSignData,
+    signContract,
+ } from "../../shared/api/cotractApi.js";
 import { signTextWithNCALayer } from "../../shared/lib/ncaLayerClient.js";
+import { ResultToast } from "../../shared/ui/ResultToast.jsx";
 
 function SignPill({ isSigned }) {
     if (isSigned) return <Pill variant="green">Подписано</Pill>;
@@ -34,6 +39,13 @@ export default function StudentContractDetailsPage() {
     const { id } = useParams();
 
     const lang = "ru";
+
+    const [toast, setToast] = useState({
+        isOpen: false,
+        type: "success",
+        title: "",
+        message: "",
+    });
 
     const [contract, setContract] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -81,59 +93,44 @@ export default function StudentContractDetailsPage() {
 
     const signNow = async () => {
         try {
-            const textToSign = `
-    Договор: ${contract.contractNumber ?? contract.contractId}
-    Практика: ${contract.jobTitle ?? ""}
-    Студент: ${contract.student ?? ""}
-    Работодатель: ${contract.company ?? ""}
-    Университет: ${contract.university ?? ""}
-    Период: ${formatPeriod(contract.startDate, contract.endDate)}
+            const signDataResponse =
+                await getContractSignData(contract.contractId, lang);
 
-    ${contract.contractContent ?? ""}
-    `;
+            const signature =
+                await signTextWithNCALayer(
+                    signDataResponse.dataToSign
+                );
 
-            const signature = await signTextWithNCALayer(textToSign);
+            await signContract(
+                contract.contractId,
+                signature,
+                lang
+            );
 
-            console.log("CMS signature:", signature);
+            await loadContract();
 
-            setContract((prev) => {
-                if (!prev) return prev;
-
-                if (!prev.isStudentSigned) {
-                    return {
-                        ...prev,
-                        isStudentSigned: true,
-                    };
-                }
-
-                if (!prev.isEmployerSigned) {
-                    return {
-                        ...prev,
-                        isEmployerSigned: true,
-                    };
-                }
-
-                if (!prev.isUniversitySigned) {
-                    return {
-                        ...prev,
-                        isUniversitySigned: true,
-                    };
-                }
-
-                return prev;
+            setToast({
+                isOpen: true,
+                type: "success",
+                title: "Договор успешно подписан",
+                message: "Подпись сохранена, статус договора обновлён.",
             });
-
-            alert("Документ подписан через NCALayer в демо-режиме.");
-        } catch (error) {
+        }
+        catch (error) {
             console.error(error);
-            alert("Не удалось подписать документ. Проверьте, что NCALayer запущен.");
+
+            setToast({
+                isOpen: true,
+                type: "error",
+                title: "Ошибка при подписании",
+                message:
+                    error?.message ??
+                    "Не удалось подписать договор. Проверьте NCALayer и ключ ЭЦП.",
+            });
         }
     };
 
-    const allSigned =
-        contract?.isStudentSigned &&
-        contract?.isEmployerSigned &&
-        contract?.isUniversitySigned;
+    const signedByStudent = contract?.isStudentSigned;
 
     if (loading) {
         return (
@@ -275,7 +272,7 @@ export default function StudentContractDetailsPage() {
                         Скачать
                     </button>
 
-                    {!allSigned ? (
+                    {!signedByStudent ? (
                         <button
                             type="button"
                             onClick={signNow}
@@ -296,6 +293,18 @@ export default function StudentContractDetailsPage() {
             </div>
 
             <div className="h-10" />
+            <ResultToast
+                isOpen={toast.isOpen}
+                type={toast.type}
+                title={toast.title}
+                message={toast.message}
+                onClose={() =>
+                    setToast((prev) => ({
+                        ...prev,
+                        isOpen: false,
+                    }))
+                }
+            />
         </div>
     );
 }
