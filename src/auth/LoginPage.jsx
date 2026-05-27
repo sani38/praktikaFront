@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LanguageSwitcher from "../shared/i18n/LanguageSwitcher.jsx";
 
 const USERS = [
     {
@@ -54,6 +55,7 @@ export default function LoginPage() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Accept-Language": localStorage.getItem("appLanguage") || "ru",
                 },
                 body: JSON.stringify({
                     email: form.email,
@@ -88,71 +90,77 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
-            <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl">
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                    Вход в систему
-                </h1>
+        <div className="min-h-screen bg-slate-100 px-4">
+            <div className="mx-auto flex max-w-6xl justify-end pt-6">
+                <LanguageSwitcher />
+            </div>
 
-                <p className="text-slate-500 mb-8">
-                    Система управления студенческой практикой
-                </p>
+            <div className="flex min-h-[calc(100vh-72px)] items-center justify-center">
+                <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl">
+                    <h1 className="text-3xl font-bold text-slate-900 mb-2">
+                        Вход в систему
+                    </h1>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Почта
-                        </label>
+                    <p className="text-slate-500 mb-8">
+                        Система управления студенческой практикой
+                    </p>
 
-                        <input
-                            type="email"
-                            name="email"
-                            value={form.email}
-                            onChange={handleChange}
-                            placeholder="Введите почту"
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-                        />
-                    </div>
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                                Почта
+                            </label>
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Пароль
-                        </label>
-
-                        <input
-                            type="password"
-                            name="password"
-                            value={form.password}
-                            onChange={handleChange}
-                            placeholder="Введите пароль"
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-                        />
-                    </div>
-
-                    {error && (
-                        <div className="rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
-                            {error}
+                            <input
+                                type="email"
+                                name="email"
+                                value={form.email}
+                                onChange={handleChange}
+                                placeholder="Введите почту"
+                                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                            />
                         </div>
-                    )}
 
-                    <button
-                        type="submit"
-                        className="w-full rounded-xl bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
-                    >
-                        Войти
-                    </button>
-                </form>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                                Пароль
+                            </label>
 
-                {/*<div className="mt-8 rounded-2xl bg-slate-100 p-4 text-sm text-slate-700">*/}
-                {/*    <p className="font-semibold mb-2">Тестовые аккаунты:</p>*/}
+                            <input
+                                type="password"
+                                name="password"
+                                value={form.password}
+                                onChange={handleChange}
+                                placeholder="Введите пароль"
+                                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                            />
+                        </div>
 
-                {/*    <ul className="space-y-1">*/}
-                {/*        <li>student / 123456</li>*/}
-                {/*        <li>employer / 123456</li>*/}
-                {/*        <li>career / 123456</li>*/}
-                {/*        <li>admin / 123456</li>*/}
-                {/*    </ul>*/}
-                {/*</div>*/}
+                        {error && (
+                            <div className="rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
+                                {error}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            className="w-full rounded-xl bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
+                        >
+                            Войти
+                        </button>
+                    </form>
+
+                    {/*<div className="mt-8 rounded-2xl bg-slate-100 p-4 text-sm text-slate-700">*/}
+                    {/*    <p className="font-semibold mb-2">Тестовые аккаунты:</p>*/}
+
+                    {/*    <ul className="space-y-1">*/}
+                    {/*        <li>student / 123456</li>*/}
+                    {/*        <li>employer / 123456</li>*/}
+                    {/*        <li>career / 123456</li>*/}
+                    {/*        <li>admin / 123456</li>*/}
+                    {/*    </ul>*/}
+                    {/*</div>*/}
+                </div>
             </div>
         </div>
     );
