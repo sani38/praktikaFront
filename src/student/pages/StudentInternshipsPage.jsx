@@ -134,6 +134,7 @@ export default function StudentInternshipsPage() {
     const [paymentTypeId, setPaymentTypeId] = useState("");
     const [durationCode, setDurationCode] = useState("");
     const [categoryId, setCategoryId] = useState("");
+    const [companyId, setCompanyId] = useState("");
 
     const [regions, setRegions] = useState([]);
     const [paymentTypes, setPaymentTypes] = useState([]);
@@ -166,6 +167,7 @@ export default function StudentInternshipsPage() {
             const paymentValue = filters.paymentTypeId ?? paymentTypeId;
             const durationValue = filters.durationCode ?? durationCode;
             const categoryValue = filters.categoryId ?? categoryId;
+            const companyValue = filters.companyId ?? companyId;
 
             const request = {
                 query: queryValue || null,
@@ -173,6 +175,7 @@ export default function StudentInternshipsPage() {
                 paymentTypeId: paymentValue || null,
                 durationCode: durationValue || null,
                 categoryId: categoryValue || null,
+                companyId: companyValue || null,
                 lang: "ru",
                 page: targetPage,
                 pageSize,
@@ -247,12 +250,14 @@ export default function StudentInternshipsPage() {
         const regionIdFromUrl = searchParams.get("regionId") ?? "";
         const paymentTypeIdFromUrl = searchParams.get("paymentTypeId") ?? "";
         const durationCodeFromUrl = searchParams.get("durationCode") ?? "";
+        const companyIdFromUrl = searchParams.get("companyId") ?? "";
 
         setQ(queryFromUrl);
         setCategoryId(categoryIdFromUrl);
         setRegionId(regionIdFromUrl);
         setPaymentTypeId(paymentTypeIdFromUrl);
         setDurationCode(durationCodeFromUrl);
+        setCompanyId(companyIdFromUrl);
 
         loadInternships(1, {
             query: queryFromUrl,
@@ -260,6 +265,7 @@ export default function StudentInternshipsPage() {
             regionId: regionIdFromUrl,
             paymentTypeId: paymentTypeIdFromUrl,
             durationCode: durationCodeFromUrl,
+            companyId: companyIdFromUrl,
         });
 
         navigate("/student/internships", { replace: true });
