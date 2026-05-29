@@ -1,6 +1,6 @@
-﻿import React, { useMemo, useState } from "react";
-import { Pill } from "../ui/CareerUi.jsx";
+﻿import React, { useEffect, useMemo, useState } from "react";import { Pill } from "../ui/CareerUi.jsx";
 import { useNavigate } from "react-router-dom";
+import { getContractsByStaff } from "../../shared/api/cotractApi.js";
 
 function Select({ value, onChange, children }) {
     return (
@@ -27,31 +27,19 @@ export default function CareerContractsPage() {
     const [t, setT] = useState("Все типы");
     const [p, setP] = useState("Все периоды");
 
-    const rows = useMemo(
-        () => [
-            {
-                id: "PR-2024-001",
-                student: "Алексей Иванов",
-                employer: "ТехноСервис Казахстан",
-                type: "Производственная практика",
-                period: "15.04.2024 - 15.07.2024",
-                status: "На согласовании",
-            },
-            { id: "text", student: "text", employer: "text", type: "text", period: "text", status: "Подписан" },
-            { id: "text2", student: "text", employer: "text", type: "text", period: "text", status: "Подписан" },
-            { id: "text3", student: "text", employer: "text", type: "text", period: "text", status: "Отклонён" },
-        ],
-        []
-    );
+    const [rows, setRows] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     const filtered = useMemo(() => {
-        const qq = q.trim().toLowerCase();
-        return rows.filter((r) => {
+    const qq = q.trim().toLowerCase();
+
+    return rows.filter((r) => {
             const matchesQ =
                 !qq ||
-                r.id.toLowerCase().includes(qq) ||
-                r.student.toLowerCase().includes(qq) ||
-                r.employer.toLowerCase().includes(qq);
+                String(r.id ?? "").toLowerCase().includes(qq) ||
+                String(r.student ?? "").toLowerCase().includes(qq) ||
+                String(r.employer ?? "").toLowerCase().includes(qq);
+
             return matchesQ;
         });
     }, [q, rows]);
@@ -63,11 +51,42 @@ export default function CareerContractsPage() {
     };
     const navigate = useNavigate();
 
+    useEffect(() => {
+        loadContracts();
+    }, []);
+
+    const loadContracts = async () => {
+        try {
+            setLoading(true);
+
+            const response = await getContractsByStaff("ru", 1, 100);
+
+            console.log("contracts response:", response);
+
+            const items = response.items ?? response.data ?? response.contracts ?? response ?? [];
+
+            const mapped = items.map((x) => ({
+                id: x.contractId,
+                contractId: x.contractId,
+                student: x.student,
+                employer: x.companyName,
+                type: x.jobTitle,
+                period: `${x.startDate ?? ""} - ${x.endDate ?? ""}`,
+                status: x.status,
+            }));
+
+            setRows(mapped);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div className="py-10">
             <div className="text-[12px] text-[#1677ff]">Договора</div>
             <h1 className="mt-2 text-[20px] font-semibold text-black/80">Договора</h1>
-            <div className="mt-1 text-[12px] text-black/45">Всего договоров: 128</div>
+            {/* <div className="mt-1 text-[12px] text-black/45">Всего договоров: 128</div> */}
 
             {/* Поиск */}
             <div className="mt-5 flex items-center gap-3">
@@ -128,7 +147,6 @@ export default function CareerContractsPage() {
                     <table className="w-full min-w-[900px] border-collapse text-left">
                         <thead className="bg-[#f6f7fb]">
                             <tr className="text-[11px] font-semibold text-black/55">
-                                <th className="px-4 py-3">№ договора</th>
                                 <th className="px-4 py-3">Студент</th>
                                 <th className="px-4 py-3">Работодатель</th>
                                 <th className="px-4 py-3">Тип практики</th>
@@ -140,7 +158,6 @@ export default function CareerContractsPage() {
                         <tbody className="text-[12px] text-black/70">
                             {filtered.map((r, idx) => (
                                 <tr key={idx} className="border-t border-black/5">
-                                    <td className="px-4 py-4">{r.id}</td>
                                     <td className="px-4 py-4">{r.student}</td>
                                     <td className="px-4 py-4">{r.employer}</td>
                                     <td className="px-4 py-4">{r.type}</td>

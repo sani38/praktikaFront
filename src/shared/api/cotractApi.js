@@ -10,6 +10,16 @@ export function getContractsByUserId(
     );
 }
 
+export function getContractsByStaff(
+    lang = "ru",
+    page = 1,
+    pageSize = 5
+) {
+    return httpGet(
+        `/api/Contract/by-stuff?lang=${lang}&page=${page}&pageSize=${pageSize}`
+    );
+}
+
 export function getContractDetails(
     contractId,
     lang = "ru"

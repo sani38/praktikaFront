@@ -287,14 +287,14 @@ export default function PublicHomePage() {
                             <IconUser size={16} />
                             <span>Вход</span>
                         </button>
-
+{/* 
                         <button
                             className="inline-flex min-w-[62px] items-center justify-between gap-2 rounded-[10px] border border-[#e8ecf2] bg-white px-[10px] py-[9px] text-[13px] font-semibold text-[#1f2937] transition hover:shadow-[0_6px_18px_rgba(16,24,40,.06)] active:translate-y-[1px]"
                             type="button"
                         >
                             <span>Рус</span>
                             <ChevronDown size={16} />
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </header>

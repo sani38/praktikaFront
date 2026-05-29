@@ -22,6 +22,7 @@ import EmployerCandidatesPage from "./employer/pages/EmployerCandidatesPage.jsx"
 import EmployerStudentDetailsPage from "./employer/pages/EmployerStudentDetailsPage.jsx";
 import EmployerSearchPage from "./employer/pages/EmployerSearchPage.jsx";
 import EmployerCreateVacancyPage from "./employer/pages/EmployerCreateVacancyPage.jsx";
+import EmployerContractDetailsPage from "./career/pages/CareerContractDetailsPage.jsx";
 import CareerLayout from "./career/CareerLayout.jsx";
 import CareerDashboardPage from "./career/pages/CareerDashboardPage.jsx";
 import CareerStudentsPage from "./career/pages/CareerStudentsPage.jsx";
@@ -77,12 +78,13 @@ export default function App() {
                     <Route path="candidates/:id" element={<EmployerStudentDetailsPage />} />
                     <Route path="search" element={<EmployerSearchPage />} />
                     <Route path="create" element={<EmployerCreateVacancyPage />} />
+                    <Route path="contracts/:id" element={<EmployerContractDetailsPage />} />
                 </Route>
 
                 <Route
                     path="/career"
                     element={
-                        <ProtectedRoute allowedRole="career">
+                        <ProtectedRoute allowedRole="university_staff">
                             <CareerLayout />
                         </ProtectedRoute>
                     }

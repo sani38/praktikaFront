@@ -37,9 +37,11 @@ function statusToPill(statusCode) {
 
     return { text: "Неизвестно", variant: "gray" };
 }
-function CandidateCard({ candidate, onMore, onApprove, onReject, actionLoading }) {
+function CandidateCard({ candidate, onMore, onApprove, onReject, actionLoading, onSignContract }) {
     const pill = statusToPill(candidate.statusCode);
     const canChangeStatus = candidate.statusCode === "under_review";
+    const canSignContract = candidate.statusCode === "approved";
+    
     return (
         <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
             <div className="flex items-start justify-between gap-3">
@@ -77,6 +79,16 @@ function CandidateCard({ candidate, onMore, onApprove, onReject, actionLoading }
                 >
                     Подробнее
                 </button>
+
+                {canSignContract && (
+                    <button
+                        type="button"
+                        className="h-9 rounded-xl bg-[#1677ff] px-4 text-[12px] font-semibold text-white hover:bg-[#0f66e6] transition"
+                        onClick={() => onSignContract()}
+                    >
+                        Договор
+                    </button>
+                )}
 
                 {canChangeStatus && (
                     <>
@@ -210,6 +222,9 @@ export default function EmployerCandidatesPage() {
                             }
                             onApprove={() => handleApprove(candidate.applicationId)}
                             onReject={() => handleReject(candidate.applicationId)}
+                            onSignContract={() =>
+                                navigate(`/employer/contracts/${candidate.contractId}`)
+                            }
                         />
                     ))}
                 </div>

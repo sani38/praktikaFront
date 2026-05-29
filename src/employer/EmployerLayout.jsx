@@ -13,7 +13,7 @@ function Header() {
 
                 <div className="flex items-center gap-3">
                     <AuthProfileMenu />
-
+{/* 
                     <button
                         type="button"
                         className="inline-flex items-center gap-2 rounded-lg border border-[#1677ff] bg-white px-3 py-2 text-[12px] font-medium text-black/70 hover:bg-black/5 transition"
@@ -28,7 +28,7 @@ function Header() {
                                 strokeLinejoin="round"
                             />
                         </svg>
-                    </button>
+                    </button> */}
                 </div>
             </div>
         </header>
