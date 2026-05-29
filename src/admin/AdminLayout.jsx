@@ -2,6 +2,7 @@ import React from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { IconUser } from "./ui/AdminUi.jsx";
 import AuthProfileMenu from "../auth/AuthProfileMenu.jsx";
+import LanguageSwitcher from "../shared/i18n/LanguageSwitcher.jsx";
 
 function Header() {
     return (
@@ -14,15 +15,7 @@ function Header() {
                 <div className="flex items-center gap-3">
                     <AuthProfileMenu />
 
-                    <button
-                        type="button"
-                        className="inline-flex items-center gap-2 rounded-lg border border-[#1677ff] bg-white px-3 py-2 text-[12px] font-medium text-black/70 hover:bg-black/5 transition"
-                    >
-                        <span>Рус</span>
-                        <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-                            <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                    </button>
+                    <LanguageSwitcher />
                 </div>
             </div>
         </header>
