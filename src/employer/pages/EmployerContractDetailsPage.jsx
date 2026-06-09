@@ -34,7 +34,7 @@ function formatPeriod(startDate, endDate) {
     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
 }
 
-export default function CareerContractDetailsPage() {
+export default function EmployerContractDetailsPage() {
     const navigate = useNavigate();
     const { id } = useParams();
 
@@ -130,7 +130,7 @@ export default function CareerContractDetailsPage() {
         }
     };
 
-    const signedByStudent = contract?.isUniversitySigned;
+    const signedByStudent = contract?.isEmployerSigned;
 
     if (loading) {
         return (
