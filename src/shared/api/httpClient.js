@@ -18,12 +18,16 @@ export async function httpGet(path) {
             ...getAuthHeaders(),
         },
     });
+    console.log("STATUS:", response.status);
 
     if (!response.ok) {
         throw new Error(`HTTP error: ${response.status}`);
     }
+    const data = await response.json();
 
-    return response.json();
+    console.log("Data:", data);
+
+    return data;
 }
 
 export async function httpGetBlob(path) {

@@ -15,3 +15,7 @@ export function getFilteredVacancies(request) {
 export function getVacancyDetails(id) {
     return httpGet(`/api/Vacancy/details?id=${encodeURIComponent(id)}`);
 }
+
+export function getCurrentVacancy() {
+    return httpGet("/api/Vacancy/current");
+}

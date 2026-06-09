@@ -2,6 +2,7 @@ import React from "react";
 import { NavLink, Outlet, Link } from "react-router-dom";
 import { IconUser } from "./ui/CareerUi.jsx";
 import LanguageSwitcher from "../shared/i18n/LanguageSwitcher.jsx";
+import AuthProfileMenu from "../auth/AuthProfileMenu.jsx";
 
 function Header() {
     return (

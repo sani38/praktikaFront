@@ -1,5 +1,7 @@
-﻿import React, { useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { Pill } from "../ui/Ui.jsx";
+import { getCurrentVacancy } from "../../shared/api/vacancyApi.js";
+import { getDiaryEntries, createOrUpdateDiaryEntry } from "../../shared/api/diaryEntryApi.js";
 
 function DayCell({ n, state, active, onClick }) {
     const base = "h-8 w-8 rounded-lg border text-[12px] transition";
@@ -23,38 +25,143 @@ function LabelDot({ color }) {
 
 export default function StudentDiaryPage() {
     const [selectedDay, setSelectedDay] = useState(11);
-
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [currentVacancy, setCurrentVacancy] = useState(null);
+    const [currentVacancyLoading, setCurrentVacancyLoading] = useState(false);
+    
+    const [diaryEntries, setDiaryEntries] = useState([]);
+    const [entriesLoading, setEntriesLoading] = useState(false);
     const [todayReport, setTodayReport] = useState({
-        attendance: "Присутствовал",
-        task: "Чем вы занимались сегодня?",
-        description: "Я массажировал",
+        attendance: "",
+        task: "",
+        description: "",
     });
 
-    const calendar = useMemo(
-        () => ({
-            2: "absent",
-            3: "present",
-            10: "remote",
-            11: "present",
-        }),
-        []
-    );
+    const calendar = useMemo(() => {
+        const result = {};
 
-    const history = useMemo(
-        () => [
-            { date: "10 мая 2025 г.", task: "Работа над первым заданием", status: "Удаленно" },
-            { date: "3 мая 2025 г.", task: "Работа над первым заданием", status: "Присутствовал" },
-            { date: "2 мая 2025 г.", task: "Работа над первым заданием", status: "Отсутствовал" },
-        ],
-        []
-    );
+        diaryEntries.forEach((entry) => {
+            const key = entry.workDate;
+            result[key] = entry.attendance;
+        });
+
+        return result;
+    }, [diaryEntries]);
+
+    const history = useMemo(() => {
+        return diaryEntries.map((entry) => ({
+            id: entry.diaryEntryId,
+            date: formatDate(entry.workDate),
+            task: entry.taskName,
+            status: entry.attendance,
+            description: entry.description,
+        }));
+    }, [diaryEntries]);
 
     const statusPill = (s) => {
-        if (s === "Присутствовал") return <Pill variant="green">Присутствовал</Pill>;
-        if (s === "Отсутствовал") return <Pill variant="red">Отсутствовал</Pill>;
-        return <Pill variant="gray">Удаленно</Pill>;
+        if (s === "present") return <Pill variant="green">Присутствовал</Pill>;
+        if (s === "absent") return <Pill variant="red">Отсутствовал</Pill>;
+        if (s === "remote") return <Pill variant="gray">Удаленно</Pill>;
+
+        return <Pill variant="gray">—</Pill>;
     };
 
+    function previousMonth() {
+        setCurrentDate((prev) =>
+            new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
+        );
+    }
+
+    function nextMonth() {
+        setCurrentDate((prev) =>
+            new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
+        );
+    }
+
+    function getDateKey(day) {
+        const date = new Date(year, month, day);
+        return date.toLocaleDateString("en-CA");
+    }
+
+    function formatDate(date) {
+        if (!date) return "—";
+        return new Date(date).toLocaleDateString("ru-RU");
+    }
+
+    async function saveDiaryEntry() {
+        try {
+            const today = new Date().toISOString().slice(0, 10);
+
+            await createOrUpdateDiaryEntry({
+                workDate: today,
+                attendance: todayReport.attendance,
+                taskName: todayReport.task,
+                description: todayReport.description,
+            });
+
+            const data = await getDiaryEntries();
+            setDiaryEntries(Array.isArray(data) ? data : []);
+
+            alert("Запись сохранена");
+        } catch (error) {
+            console.error("Ошибка сохранения записи дневника:", error);
+            alert("Ошибка при сохранении записи");
+        }
+    }
+
+    useEffect(() => {
+        async function loadCurrentVacancy() {
+            try {
+                setCurrentVacancyLoading(true);
+
+                const data = await getCurrentVacancy();
+
+                setCurrentVacancy(data);
+            } catch (error) {
+                console.error("Ошибка загрузки текущей практики:", error);
+                setCurrentVacancy(null);
+            } finally {
+                setCurrentVacancyLoading(false);
+            }
+        }
+
+        loadCurrentVacancy();
+    }, []);
+
+    useEffect(() => {
+        async function loadDiaryEntries() {
+            try {
+                setEntriesLoading(true);
+
+                const data = await getDiaryEntries();
+
+                setDiaryEntries(Array.isArray(data) ? data : []);
+            } catch (error) {
+                console.error("Ошибка загрузки записей дневника:", error);
+                setDiaryEntries([]);
+            } finally {
+                setEntriesLoading(false);
+            }
+        }
+
+        loadDiaryEntries();
+    }, []);
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    const monthName = currentDate.toLocaleDateString("ru-RU", {
+        month: "long",
+        year: "numeric",
+    });
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const offset = firstDay === 0 ? 6 : firstDay - 1;
+
+    console.log(currentDate);
+    console.log(monthName);
     return (
         <div className="py-8">
             <div className="flex items-start justify-between gap-4">
@@ -68,14 +175,7 @@ export default function StudentDiaryPage() {
                         onClick={() => alert("Скачать дневник (демо)")}
                         className="h-9 rounded-xl border border-[#1677ff] bg-white px-4 text-[12px] font-semibold text-[#1677ff] hover:bg-[#eef5ff] transition"
                     >
-                        Скачать дневник ↓
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => alert("Отправлено куратору (демо)")}
-                        className="h-9 rounded-xl bg-[#1677ff] px-4 text-[12px] font-semibold text-white hover:bg-[#0f66e6] transition"
-                    >
-                        Отправить куратору →
+                        Скачать дневник
                     </button>
                 </div>
             </div>
@@ -87,50 +187,100 @@ export default function StudentDiaryPage() {
                         <div className="text-[14px] font-semibold text-black/75">Текущая практика</div>
                         <div className="mt-1 text-[12px] text-black/45">Информация о текущей практике</div>
 
-                        <div className="mt-4">
-                            <Pill variant="blue">ТехноСервис Казахстан</Pill>
-                            <div className="mt-3 text-[14px] font-semibold text-black/75">Стажировка в IT отделе</div>
-                        </div>
+                        {currentVacancyLoading && (
+                            <div className="mt-4 text-[12px] text-black/45">Загрузка...</div>
+                        )}
 
-                        <div className="mt-4 text-[12px] text-black/55">
-                            <div className="grid grid-cols-12 py-1">
-                                <div className="col-span-5 text-black/45">Период:</div>
-                                <div className="col-span-7 font-semibold text-black/60">15.05.2025 - 15.08.2025</div>
+                        {!currentVacancyLoading && !currentVacancy && (
+                            <div className="mt-4 text-[12px] text-black/45">
+                                Текущая практика не найдена
                             </div>
-                            <div className="grid grid-cols-12 py-1">
-                                <div className="col-span-5 text-black/45">Руководитель:</div>
-                                <div className="col-span-7 font-semibold text-black/60">Алексей Петров</div>
-                            </div>
-                            <div className="grid grid-cols-12 py-1">
-                                <div className="col-span-5 text-black/45">Должность:</div>
-                                <div className="col-span-7 font-semibold text-black/60">Руководитель IT-отдела</div>
-                            </div>
-                            <div className="grid grid-cols-12 py-1">
-                                <div className="col-span-5 text-black/45">Статус:</div>
-                                <div className="col-span-7">{<Pill variant="green">Активна</Pill>}</div>
-                            </div>
-                        </div>
+                        )}
+
+                        {!currentVacancyLoading && currentVacancy && (
+                            <>
+                                <div className="mt-4">
+                                    <Pill variant="blue">{currentVacancy.companyName}</Pill>
+                                    <div className="mt-3 text-[14px] font-semibold text-black/75">
+                                        {currentVacancy.jobTitle}
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 text-[12px] text-black/55">
+                                    <div className="grid grid-cols-12 py-1">
+                                        <div className="col-span-5 text-black/45">Период:</div>
+                                        <div className="col-span-7 font-semibold text-black/60">
+                                            {formatDate(currentVacancy.startDate)} - {formatDate(currentVacancy.endDate)}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-12 py-1">
+                                        <div className="col-span-5 text-black/45">Руководитель:</div>
+                                        <div className="col-span-7 font-semibold text-black/60">
+                                            {currentVacancy.supervisorFullName}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-12 py-1">
+                                        <div className="col-span-5 text-black/45">Статус:</div>
+                                        <div className="col-span-7">
+                                            <Pill variant="green">Активна</Pill>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
                         <div className="text-[14px] font-semibold text-black/75">Календарь посещений</div>
 
                         <div className="mt-4 flex items-center justify-center gap-4 text-[12px] text-black/55">
-                            <button type="button" className="text-[#1677ff]">←</button>
-                            <div className="font-semibold text-black/65">Май 2025</div>
-                            <button type="button" className="text-[#1677ff]">→</button>
+                            <button
+                                type="button"
+                                onClick={previousMonth}
+                                className="text-[#1677ff]"
+                            >
+                                ←
+                            </button>
+
+                            <div
+                                key={`${year}-${month}`}
+                                className="font-semibold text-black/65"
+                            >
+                                {monthName}
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={nextMonth}
+                                className="text-[#1677ff]"
+                            >
+                                →
+                            </button>
                         </div>
 
-                        <div className="mt-4 grid grid-cols-7 gap-2">
-                            {Array.from({ length: 31 }, (_, i) => i + 1).map((n) => (
-                                <DayCell
-                                    key={n}
-                                    n={n}
-                                    state={calendar[n] || "none"}
-                                    active={n === selectedDay}
-                                    onClick={() => setSelectedDay(n)}
-                                />
-                            ))}
+                        <div key={`${year}-${month}`} className="mt-4 grid grid-cols-7 gap-2">
+                            {[
+                                ...Array(offset).fill(null),
+                                ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+                            ].map((n, index) => {
+                                if (n === null) {
+                                    return <div key={`empty-${year}-${month}-${index}`} />;
+                                }
+
+                                const dateKey = getDateKey(n);
+
+                                return (
+                                    <DayCell
+                                        key={dateKey}
+                                        n={n}
+                                        state={calendar[dateKey] || "none"}
+                                        active={n === selectedDay}
+                                        onClick={() => setSelectedDay(n)}
+                                    />
+                                );
+                            })}
                         </div>
 
                         <div className="mt-4 space-y-2 text-[12px] text-black/55">
@@ -158,11 +308,16 @@ export default function StudentDiaryPage() {
                         <div className="mt-4 grid grid-cols-1 gap-4">
                             <label className="block text-[11px] text-black/45">
                                 Посещаемость
-                                <input
+                                <select
                                     value={todayReport.attendance}
                                     onChange={(e) => setTodayReport((p) => ({ ...p, attendance: e.target.value }))}
                                     className="mt-2 h-10 w-full rounded-xl border border-black/10 bg-white px-4 text-[12px] text-black/70 outline-none focus:border-[#1677ff]"
-                                />
+                                >
+                                    <option value="">Выберите</option>
+                                    <option value="present">Присутствовал</option>
+                                    <option value="absent">Отсутствовал</option>
+                                    <option value="remote">Удаленно</option>
+                                </select>
                             </label>
 
                             <label className="block text-[11px] text-black/45">
@@ -187,7 +342,7 @@ export default function StudentDiaryPage() {
                         <div className="mt-5 flex justify-end">
                             <button
                                 type="button"
-                                onClick={() => alert("Запись сохранена (демо)")}
+                                onClick={saveDiaryEntry}
                                 className="h-9 rounded-xl bg-[#1677ff] px-4 text-[12px] font-semibold text-white hover:bg-[#0f66e6] transition"
                             >
                                 Сохранить запись
@@ -204,7 +359,6 @@ export default function StudentDiaryPage() {
                                 <div className="col-span-3">Дата</div>
                                 <div className="col-span-5">Задача</div>
                                 <div className="col-span-2">Присутствие</div>
-                                <div className="col-span-2 text-right">Действия</div>
                             </div>
 
                             {history.map((x) => (
@@ -212,27 +366,8 @@ export default function StudentDiaryPage() {
                                     <div className="col-span-3 text-black/60">{x.date}</div>
                                     <div className="col-span-5 text-black/60">{x.task}</div>
                                     <div className="col-span-2">{statusPill(x.status)}</div>
-                                    <div className="col-span-2 flex justify-end">
-                                        <button
-                                            type="button"
-                                            className="h-8 rounded-lg border border-[#1677ff] bg-white px-3 text-[11px] font-semibold text-[#1677ff] hover:bg-[#eef5ff] transition"
-                                            onClick={() => alert(`Редактирование: ${x.date} (демо)`)}
-                                        >
-                                            Редактировать
-                                        </button>
-                                    </div>
                                 </div>
                             ))}
-                        </div>
-
-                        <div className="mt-5 flex justify-end">
-                            <button
-                                type="button"
-                                onClick={() => alert("Сохранено (демо)")}
-                                className="h-9 rounded-xl bg-[#1677ff] px-4 text-[12px] font-semibold text-white hover:bg-[#0f66e6] transition"
-                            >
-                                Сохранить запись
-                            </button>
                         </div>
                     </div>
                 </div>
