@@ -186,16 +186,16 @@ export default function EmployerDashboardPage() {
 
     const diaries = [
         { name: "Алия Нурлановна", status: "Присутствовал(-а)", statusVariant: "green", position: "Стажер в IT-отдел", date: "10.04.2025" },
-        { name: "Алия Нурлановна", status: "Удаленно", statusVariant: "gray", position: "Стажер в IT-отдел", date: "10.04.2025" },
-        { name: "Алия Нурлановна", status: "Удаленно", statusVariant: "gray", position: "Стажер в IT-отдел", date: "10.04.2025" },
-        { name: "Алия Нурлановна", status: "Отсутствовал(-а)", statusVariant: "red", position: "Стажер в IT-отдел", date: "10.04.2025" },
+        { name: "Андас Малика", status: "Удаленно", statusVariant: "gray", position: "Тестировщик", date: "10.04.2025" },
+        { name: "Кубранова Сания", status: "Удаленно", statusVariant: "gray", position: "Разработчик", date: "10.04.2025" },
+        { name: "Сабитов Еркебулан", status: "Отсутствовал(-а)", statusVariant: "red", position: "Стажер в IT-отдел", date: "10.04.2025" },
     ];
 
     const apps = [
-        { status: "На рассмотрении", variant: "blue", name: "Алия Нурлановна", position: "Стажер в IT-отдел", date: "10.04.2025" },
-        { status: "Одобрено", variant: "green", name: "Алия Нурлановна", position: "Стажер в IT-отдел", date: "10.04.2025" },
-        { status: "Одобрено", variant: "green", name: "Алия Нурлановна", position: "Стажер в IT-отдел", date: "10.04.2025" },
-        { status: "Отклонено", variant: "red", name: "Алия Нурлановна", position: "Стажер в IT-отдел", date: "10.04.2025" },
+        { status: "На рассмотрении", variant: "blue", name: "Молдагулова Алия", position: "Разработчик", date: "10.04.2025" },
+        { status: "Одобрено", variant: "green", name: "Касымов Данияр", position: "Стажер в IT-отдел", date: "10.04.2025" },
+        { status: "Одобрено", variant: "green", name: "Кубранова Сания", position: "Тестировщик", date: "10.04.2025" },
+        { status: "Отклонено", variant: "red", name: "Букина Вероника", position: "Стажер в IT-отдел", date: "10.04.2025" },
     ];
 
     return (

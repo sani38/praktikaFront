@@ -51,9 +51,9 @@ export default function CareerDashboardPage() {
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-4">
                 <DiaryCard name="Алия Нурлановна" status="Присутствовал(-а)" variant="green" />
-                <DiaryCard name="Алия Нурлановна" status="Удаленно" variant="yellow" />
-                <DiaryCard name="Алия Нурлановна" status="Удаленно" variant="yellow" />
-                <DiaryCard name="Алия Нурлановна" status="Отсутствовал(-а)" variant="red" />
+                <DiaryCard name="Андас Малика" status="Удаленно" variant="yellow" />
+                <DiaryCard name="Курбанова Сания" status="Удаленно" variant="yellow" />
+                <DiaryCard name="Еркебулан Сабитов" status="Отсутствовал(-а)" variant="red" />
             </div>
 
             <div className="h-10" />

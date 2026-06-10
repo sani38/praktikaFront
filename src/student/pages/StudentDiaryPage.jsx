@@ -102,7 +102,6 @@ export default function StudentDiaryPage() {
             const data = await getDiaryEntries();
             setDiaryEntries(Array.isArray(data) ? data : []);
 
-            alert("Запись сохранена");
         } catch (error) {
             console.error("Ошибка сохранения записи дневника:", error);
             alert("Ошибка при сохранении записи");
@@ -302,7 +301,7 @@ export default function StudentDiaryPage() {
                     <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
                         <div className="text-[14px] font-semibold text-black/75">Отчет за сегодня</div>
                         <div className="mt-2 text-[12px] text-black/45">
-                            5 мая 2025 г. - Заполните информацию о сегодняшнем дне практики
+                            Заполните информацию о сегодняшнем дне практики
                         </div>
 
                         <div className="mt-4 grid grid-cols-1 gap-4">
