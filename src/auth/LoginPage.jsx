@@ -71,7 +71,22 @@ export default function LoginPage() {
             const data = await response.json();
 
             localStorage.setItem("token", data.token);
-            localStorage.setItem("roleCode", data.roleCode);
+            if (data.roleCode === "career") {
+                localStorage.setItem("roleCode", "university_staff");
+                data.roleCode = "university_staff"
+            }
+            else {
+                localStorage.setItem("roleCode", data.roleCode);
+            }
+
+            localStorage.setItem(
+    "authUser",
+    JSON.stringify({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        roleCode: data.roleCode,
+    })
+);
 
             if (data.roleCode === "admin") {
                 navigate("/admin");

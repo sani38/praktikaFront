@@ -1,5 +1,6 @@
-﻿import React, { useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { Pill } from "../ui/CareerUi.jsx";
+import { getStudentsForCareer } from "../../shared/api/careerApi.js";
 
 function Select({ value, onChange, children }) {
     return (
@@ -18,7 +19,7 @@ function StudentCard({ s }) {
         <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
             <div className="flex items-start justify-between gap-3">
                 <div>
-                    <Pill variant="blue">{s.topTag}</Pill>
+                    {s.topTag && <Pill variant="blue">{s.topTag}</Pill>}
                     <div className="mt-3 text-[12px] font-semibold text-black/75">{s.name}</div>
                 </div>
                 <Pill variant="blue">GPA: {s.gpa}</Pill>
@@ -32,8 +33,6 @@ function StudentCard({ s }) {
                     <Pill key={x} variant="gray">{x}</Pill>
                 ))}
             </div>
-
-            <div className="mt-3 text-[11px] text-black/40">{s.dateLabel}: {s.date}</div>
 
             <div className="mt-4 flex justify-end">
                 <button
@@ -53,17 +52,47 @@ export default function CareerStudentsPage() {
     const [course, setCourse] = useState("Все курсы");
     const [status, setStatus] = useState("Все статусы");
 
-    const data = useMemo(() => [
-        { id: 1, topTag: "На практике", name: "Алия Нурлановна", gpa: "3.7/4", edu: "Satbayev University, Computer Science, 3 курс", skills: ["Python", "Django", "SQL", "Data Viz"], dateLabel: "Дата начала практики", date: "10.04.2025" },
-        { id: 2, topTag: "Новая заявка", name: "Алия Нурлановна", gpa: "3.7/4", edu: "Satbayev University, Computer Science, 3 курс", skills: ["Python", "Django", "SQL", "Data Viz"], dateLabel: "Дата отклика", date: "10.04.2025" },
-        { id: 3, topTag: "", name: "Данияр Турсунов", gpa: "3.5/4", edu: "KazNU, Software Engineering, 2 курс", skills: ["Java", "Spring", "NoSQL", "Machine Learning"], dateLabel: "Дата отклика", date: "15.04.2025" },
-        { id: 4, topTag: "", name: "Лейла Сайфуллина", gpa: "3.9/4", edu: "Nazarbayev University, Data Science, 1 курс", skills: ["R", "Tableau", "Python", "Statistics"], dateLabel: "Дата отклика", date: "20.04.2025" },
-    ], []);
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadStudents() {
+            try {
+                const response = await getStudentsForCareer();
+
+                const mapped = response.map((x) => ({
+                    id: x.userId,
+                    topTag: x.statusName || "Без статуса",
+                    name: `${x.lastName} ${x.firstName}`,
+                    gpa: x.gpa ?? "-",
+                    edu: `${x.course} курс`,
+                    skills: x.skillsMap || [],
+                    course: `${x.course} курс`,
+                    status: x.statusName || "Без статуса",
+                }));
+
+                setData(mapped);
+            } catch (error) {
+                console.error("Ошибка загрузки студентов:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadStudents();
+    }, []);
 
     const filtered = useMemo(() => {
         const qq = q.trim().toLowerCase();
-        return data.filter((x) => !qq || x.name.toLowerCase().includes(qq));
-    }, [q, data]);
+
+        return data.filter((x) => {
+            const matchesSearch = !qq || x.name.toLowerCase().includes(qq);
+            const matchesCourse = course === "Все курсы" || x.course === course;
+            const matchesStatus = status === "Все статусы" || x.status === status;
+
+            return matchesSearch && matchesCourse && matchesStatus;
+        });
+    }, [q, course, status, data]);
 
     const reset = () => {
         setFac("Все факультеты");
@@ -75,7 +104,7 @@ export default function CareerStudentsPage() {
         <div className="py-10">
             <div className="text-[12px] text-[#1677ff]">Студенты</div>
             <h1 className="mt-2 text-[20px] font-semibold text-black/80">Студенты</h1>
-            <div className="mt-1 text-[12px] text-black/45">Найдено студентов: 128</div>
+            <div className="mt-1 text-[12px] text-black/45">Найдено студентов: {filtered.length}</div>
 
             <div className="mt-5 flex items-center gap-3">
                 <input
@@ -116,6 +145,7 @@ export default function CareerStudentsPage() {
                     <option>Все статусы</option>
                     <option>На практике</option>
                     <option>Новая заявка</option>
+                    <option>Без статуса</option>
                 </Select>
 
                 <button
@@ -127,11 +157,25 @@ export default function CareerStudentsPage() {
                 </button>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                {filtered.map((s) => (
-                    <StudentCard key={s.id} s={s} />
-                ))}
-            </div>
+            {loading && (
+                <div className="mt-6 rounded-2xl border border-black/5 bg-white p-5 text-[12px] text-black/45">
+                    Загрузка студентов...
+                </div>
+            )}
+
+            {!loading && filtered.length === 0 && (
+                <div className="mt-6 rounded-2xl border border-black/5 bg-white p-5 text-[12px] text-black/45">
+                    Студенты не найдены
+                </div>
+            )}
+
+            {!loading && filtered.length > 0 && (
+                <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {filtered.map((s) => (
+                        <StudentCard key={s.id} s={s} />
+                    ))}
+                </div>
+            )}
 
             <div className="mt-8 flex items-center justify-center gap-2 text-[12px] text-black/45">
                 <button className="h-8 w-8 rounded-lg border border-black/10 bg-white hover:bg-black/5">←</button>

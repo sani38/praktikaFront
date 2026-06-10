@@ -1,22 +1,35 @@
-﻿import React, { useMemo, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Pill } from "../ui/CareerUi.jsx";
+import { getDiaryDetails } from "../../shared/api/careerApi.js";
 
 function StatusPill({ status }) {
     if (status === "На проверке") return <Pill variant="blue">{status}</Pill>;
     if (status === "Согласовано") return <Pill variant="green">{status}</Pill>;
     if (status === "Отклонено") return <Pill variant="red">{status}</Pill>;
-    return <Pill variant="gray">{status}</Pill>;
+
+    return <Pill variant="gray">{status || "Без статуса"}</Pill>;
+}
+
+function getPresenceVariant(status) {
+    if (status === "Присутствовал") return "green";
+    if (status === "Отсутствовал") return "red";
+    if (status === "Удаленно") return "yellow";
+
+    return "gray";
 }
 
 function Modal({ open, title, children, onClose }) {
     if (!open) return null;
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+
             <div className="relative w-full max-w-[720px] rounded-2xl bg-white p-6 shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
                 <div className="flex items-start justify-between gap-3">
                     <div className="text-[14px] font-semibold text-black/80">{title}</div>
+
                     <button
                         type="button"
                         onClick={onClose}
@@ -26,6 +39,7 @@ function Modal({ open, title, children, onClose }) {
                         ×
                     </button>
                 </div>
+
                 <div className="mt-4">{children}</div>
             </div>
         </div>
@@ -34,39 +48,101 @@ function Modal({ open, title, children, onClose }) {
 
 export default function CareerDiaryDetailsPage() {
     const navigate = useNavigate();
-    const { id } = useParams(); // тут id = encodeURIComponent(student) в нашем переходе
+    const { id } = useParams();
 
-    const diary = useMemo(
-        () => ({
-            student: decodeURIComponent(id),
-            faculty: "Информационные технологии",
-            company: "ТехноСервис Казахстан",
-            period: "15.04.2024 - 15.07.2024",
-            entriesCount: 12,
-            status: "На проверке",
-            grade: "Не оценено",
-            entries: [
-                { date: "10.05.2025", task: "Работа над первым заданием", presence: "Удаленно", presenceVariant: "yellow" },
-                { date: "03.05.2025", task: "Работа над первым заданием", presence: "Присутствовал", presenceVariant: "green" },
-                { date: "02.05.2025", task: "Работа над первым заданием", presence: "Отсутствовал", presenceVariant: "red" },
-            ],
-        }),
-        [id]
-    );
+    const [diary, setDiary] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const [status, setStatus] = useState(diary.status);
-    const [grade, setGrade] = useState(diary.grade);
+    const [status, setStatus] = useState("");
+    const [grade, setGrade] = useState("Не оценено");
 
     const [openEntry, setOpenEntry] = useState(false);
     const [entryText, setEntryText] = useState("");
+
     const [openReject, setOpenReject] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
 
-    const approveDiary = () => setStatus("Согласовано");
+    useEffect(() => {
+        async function loadDiary() {
+            try {
+                const response = await getDiaryDetails(id);
+
+                const mapped = {
+                    studentId: response.studentId,
+                    student: response.studentFullName,
+                    faculty: response.facultyName,
+                    company: response.companyName,
+                    period: response.period,
+                    status: response.statusName,
+                    entries: (response.entries || []).map((x) => ({
+                        id: x.diaryId,
+                        date: x.date,
+                        task: x.task,
+                        description: x.description,
+                        presence: x.presenceStatusName,
+                        presenceVariant: getPresenceVariant(x.presenceStatusName),
+                    })),
+                };
+
+                setDiary(mapped);
+                setStatus(mapped.status);
+            } catch (error) {
+                console.error("Ошибка загрузки дневника:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadDiary();
+    }, [id]);
+
+    const openEntryModal = (entry) => {
+        setEntryText(
+            `Дата: ${entry.date || "-"}\n` +
+            `Задача: ${entry.task || "-"}\n` +
+            `Статус: ${entry.presence || "-"}\n\n` +
+            `Описание:\n${entry.description || "-"}`
+        );
+
+        setOpenEntry(true);
+    };
+
+    const approveDiary = () => {
+        setStatus("Согласовано");
+    };
+
     const rejectDiary = () => {
         setStatus("Отклонено");
         setOpenReject(false);
     };
+
+    if (loading) {
+        return (
+            <div className="py-10">
+                <div className="rounded-2xl border border-black/5 bg-white p-5 text-[12px] text-black/45">
+                    Загрузка дневника...
+                </div>
+            </div>
+        );
+    }
+
+    if (!diary) {
+        return (
+            <div className="py-10">
+                <button
+                    type="button"
+                    onClick={() => navigate("/career/diary")}
+                    className="text-[12px] text-black/50 hover:text-black/70"
+                >
+                    ← Дневник практики
+                </button>
+
+                <div className="mt-6 rounded-2xl border border-black/5 bg-white p-5 text-[12px] text-black/45">
+                    Дневник не найден
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="py-10">
@@ -81,19 +157,23 @@ export default function CareerDiaryDetailsPage() {
             <div className="mt-2 text-[12px] text-black/45">Просмотр дневника</div>
             <h1 className="mt-1 text-[20px] font-semibold text-black/80">Дневник практики</h1>
 
-            {/* Summary card */}
             <div className="mt-6 rounded-2xl border border-black/5 bg-white p-6 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <div className="text-[14px] font-semibold text-black/80">{diary.student}</div>
+
                         <div className="mt-2 text-[12px] text-black/55">
                             {diary.faculty} • {diary.company}
                         </div>
-                        <div className="mt-1 text-[11px] text-black/40">Период: {diary.period}</div>
+
+                        <div className="mt-1 text-[11px] text-black/40">
+                            Период: {diary.period}
+                        </div>
                     </div>
+
                     <div className="flex items-center gap-2">
                         <StatusPill status={status} />
-                        <Pill variant="gray">Записей: {diary.entriesCount}</Pill>
+                        <Pill variant="gray">Записей: {diary.entries.length}</Pill>
                     </div>
                 </div>
 
@@ -115,28 +195,9 @@ export default function CareerDiaryDetailsPage() {
                 </div>
 
                 <div className="mt-5 flex flex-wrap items-center justify-end gap-3">
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setEntryText(
-                                `Дата: ${diary.entries[0]?.date}\nЗадача: ${diary.entries[0]?.task}\nСтатус: ${diary.entries[0]?.presence}\n\nОписание (демо):\nВыполнил задачи дня, участвовал в встречах, подготовил отчёт...`
-                            );
-                            setOpenEntry(true);
-                        }}
-                        className="h-10 rounded-xl border border-black/10 bg-white px-5 text-[12px] font-semibold text-black/60 hover:bg-black/5 transition"
-                    >
-                        Открыть запись (демо)
-                    </button>
+                    
 
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setGrade("Оценено: 4.5/5");
-                        }}
-                        className="h-10 rounded-xl border border-[#1677ff] bg-white px-5 text-[12px] font-semibold text-[#1677ff] hover:bg-[#eef5ff] transition"
-                    >
-                        Оценить
-                    </button>
+                    
 
                     {status === "Согласовано" ? (
                         <button
@@ -156,20 +217,7 @@ export default function CareerDiaryDetailsPage() {
                         </button>
                     ) : (
                         <>
-                            <button
-                                type="button"
-                                onClick={() => setOpenReject(true)}
-                                className="h-10 rounded-xl border border-[#ff3b30] bg-white px-5 text-[12px] font-semibold text-[#ff3b30] hover:bg-[#fff0f0] transition"
-                            >
-                                Отклонить
-                            </button>
-                            <button
-                                type="button"
-                                onClick={approveDiary}
-                                className="h-10 rounded-xl bg-[#1677ff] px-5 text-[12px] font-semibold text-white hover:bg-[#0f66e6] transition"
-                            >
-                                Согласовать
-                            </button>
+                           
                         </>
                     )}
                 </div>
@@ -190,30 +238,27 @@ export default function CareerDiaryDetailsPage() {
                                     <th className="px-4 py-3">Действия</th>
                                 </tr>
                             </thead>
+
                             <tbody className="text-[12px] text-black/70">
-                                {diary.entries.map((e, idx) => (
-                                    <tr key={idx} className="border-t border-black/5">
-                                        <td className="px-4 py-4">{e.date}</td>
-                                        <td className="px-4 py-4">{e.task}</td>
+                                {diary.entries.map((entry) => (
+                                    <tr key={entry.id} className="border-t border-black/5">
+                                        <td className="px-4 py-4">{entry.date}</td>
+                                        <td className="px-4 py-4">{entry.task}</td>
                                         <td className="px-4 py-4">
-                                            <Pill variant={e.presenceVariant}>{e.presence}</Pill>
+                                            <Pill variant={entry.presenceVariant}>{entry.presence}</Pill>
                                         </td>
                                         <td className="px-4 py-4">
                                             <button
                                                 type="button"
                                                 className="h-9 rounded-xl border border-[#1677ff] bg-white px-4 text-[12px] font-semibold text-[#1677ff] hover:bg-[#eef5ff] transition"
-                                                onClick={() => {
-                                                    setEntryText(
-                                                        `Дата: ${e.date}\nЗадача: ${e.task}\nСтатус: ${e.presence}\n\nОписание (демо):\nСегодня выполнял(а) задачи, писал(а) код, участвовал(а) в митингах...`
-                                                    );
-                                                    setOpenEntry(true);
-                                                }}
+                                                onClick={() => openEntryModal(entry)}
                                             >
                                                 Просмотр
                                             </button>
                                         </td>
                                     </tr>
                                 ))}
+
                                 {diary.entries.length === 0 && (
                                     <tr>
                                         <td colSpan={4} className="px-4 py-10 text-center text-[12px] text-black/45">
@@ -233,6 +278,7 @@ export default function CareerDiaryDetailsPage() {
                     onChange={(e) => setEntryText(e.target.value)}
                     className="h-[260px] w-full resize-none rounded-xl border border-black/10 bg-white px-4 py-3 text-[12px] leading-5 text-black/70 outline-none focus:border-[#1677ff]"
                 />
+
                 <div className="mt-4 flex justify-end">
                     <button
                         type="button"
@@ -245,13 +291,15 @@ export default function CareerDiaryDetailsPage() {
             </Modal>
 
             <Modal open={openReject} title="Отклонить дневник" onClose={() => setOpenReject(false)}>
-                <div className="text-[12px] text-black/55">Укажите причину отклонения (демо).</div>
+                <div className="text-[12px] text-black/55">Укажите причину отклонения.</div>
+
                 <textarea
                     value={rejectReason}
                     onChange={(e) => setRejectReason(e.target.value)}
                     className="mt-3 h-[110px] w-full resize-none rounded-xl border border-black/10 bg-white px-4 py-3 text-[12px] text-black/70 outline-none focus:border-[#1677ff]"
                     placeholder="Причина..."
                 />
+
                 <div className="mt-4 flex items-center justify-end gap-2">
                     <button
                         type="button"
@@ -260,6 +308,7 @@ export default function CareerDiaryDetailsPage() {
                     >
                         Отмена
                     </button>
+
                     <button
                         type="button"
                         onClick={rejectDiary}

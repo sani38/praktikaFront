@@ -1,5 +1,6 @@
-﻿import React, { useMemo, useState } from "react";
-import { Pill, IconPin, IconClock, IconMoney } from "../ui/CareerUi.jsx";
+﻿import React, { useEffect, useMemo, useState } from "react";
+import { Pill, IconPin } from "../ui/CareerUi.jsx";
+import { getCompaniesForCareer } from "../../shared/api/careerApi.js";
 
 function Select({ value, onChange, children }) {
     return (
@@ -27,21 +28,18 @@ function EmployerCard({ e }) {
         <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
             <div className="flex items-start justify-between gap-3">
                 <Pill variant="blue">{e.category}</Pill>
-                <Pill variant={e.statusVariant}>{e.status}</Pill>
+                <Pill variant="green">Активен</Pill>
             </div>
 
             <div className="mt-3 text-[14px] font-semibold text-black/80">{e.name}</div>
 
-            <div className="mt-2 flex flex-wrap gap-2">
-                {e.tags.map((t) => (
-                    <Pill key={t} variant="gray">{t}</Pill>
-                ))}
-            </div>
+            {e.description && (
+                <div className="mt-2 text-[12px] leading-6 text-black/55">{e.description}</div>
+            )}
 
             <div className="mt-4 grid grid-cols-3 gap-3">
                 <MiniStat label="Вакансий" value={e.vacancies} />
-                <MiniStat label="Студентов" value={e.students} />
-                <MiniStat label="Практик" value={e.practices} />
+                <MiniStat label="Студентов" value="-" />
             </div>
 
             <div className="mt-4 rounded-2xl bg-[#f6f7fb] p-4">
@@ -50,14 +48,12 @@ function EmployerCard({ e }) {
             </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-4 text-[12px] text-[#1677ff]">
-                <span className="inline-flex items-center gap-2"><IconPin /> {e.city}</span>
-                <span className="inline-flex items-center gap-2"><IconClock /> {e.duration}</span>
-                <span className="inline-flex items-center gap-2"><IconMoney /> {e.salary}</span>
-                <span className="inline-flex items-center gap-2">🕘 {e.format}</span>
+                <span className="inline-flex items-center gap-2">
+                    <IconPin /> {e.city}
+                </span>
             </div>
 
-            <div className="mt-4 flex items-center justify-between gap-3">
-                <div className="text-[11px] text-black/35">Создано: {e.created}</div>
+            <div className="mt-4 flex items-center justify-end gap-3">
                 <button
                     type="button"
                     className="h-9 rounded-xl border border-[#1677ff] bg-white px-4 text-[12px] font-semibold text-[#1677ff] hover:bg-[#eef5ff] transition"
@@ -75,73 +71,66 @@ export default function CareerEmployersPage() {
     const [city, setCity] = useState("Все города");
     const [status, setStatus] = useState("Все статусы");
 
-    const data = useMemo(() => [
-        {
-            id: 1,
-            category: "IT-сервис",
-            status: "На модерации",
-            statusVariant: "blue",
-            name: "TechVision LLP",
-            tags: ["IT", "Программирование"],
-            vacancies: 3, students: 3, practices: 3,
-            contact: "Дана Алмазхан, +7 701 565-88-33",
-            city: "Алматы",
-            duration: "3 месяца",
-            salary: "По договоренности",
-            format: "Полный рабочий день",
-            created: "19.05.2025",
-        },
-        {
-            id: 2,
-            category: "Консалтинг",
-            status: "На модерации",
-            statusVariant: "blue",
-            name: "Insight Consulting",
-            tags: ["Business", "Анализ данных"],
-            vacancies: 3, students: 3, practices: 3,
-            contact: "Ирина Петрова",
-            city: "Нур-Султан",
-            duration: "4 месяца",
-            salary: "100 000 ₸",
-            format: "Частичная занятость",
-            created: "15.06.2025",
-        },
-        {
-            id: 3,
-            category: "Маркетинг",
-            status: "Активен",
-            statusVariant: "green",
-            name: "Creative Minds",
-            tags: ["Marketing", "Социальные сети"],
-            vacancies: 3, students: 3, practices: 3,
-            contact: "Алексей Смирнов",
-            city: "Шымкент",
-            duration: "1 месяц",
-            salary: "150 000 ₸",
-            format: "Полный рабочий день",
-            created: "22.06.2025",
-        },
-        {
-            id: 4,
-            category: "Дизайн",
-            status: "Активен",
-            statusVariant: "green",
-            name: "Artistic Touch",
-            tags: ["Design", "Графический дизайн"],
-            vacancies: 3, students: 3, practices: 3,
-            contact: "Евгения Лукина",
-            city: "Алматы",
-            duration: "2 месяца",
-            salary: "По договоренности",
-            format: "Частичная занятость",
-            created: "01.07.2025",
-        },
-    ], []);
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadCompanies() {
+            try {
+                const response = await getCompaniesForCareer();
+
+                const mapped = response.map((x) => {
+                    const contactName = `${x.contactLastName || ""} ${x.contactFirstName || ""}`.trim();
+                    const contactParts = [
+                        contactName,
+                        x.contactPhone,
+                        x.contactEmail,
+                    ].filter(Boolean);
+
+                    return {
+                        id: x.companyId,
+                        name: x.companyName,
+                        description: x.description,
+                        category: x.companyCategoryName || "Без категории",
+                        city: x.regionName || "Город не указан",
+                        vacancies: x.vacanciesCount,
+                        contact: contactParts.length ? contactParts.join(", ") : "Контакт не указан",
+                        industry: x.companyCategoryName || "Без категории",
+                    };
+                });
+
+                setData(mapped);
+            } catch (error) {
+                console.error("Ошибка загрузки работодателей:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadCompanies();
+    }, []);
+
+    const industries = useMemo(() => {
+        const values = data.map((x) => x.industry).filter(Boolean);
+        return ["Все отрасли", ...new Set(values)];
+    }, [data]);
+
+    const cities = useMemo(() => {
+        const values = data.map((x) => x.city).filter(Boolean);
+        return ["Все города", ...new Set(values)];
+    }, [data]);
 
     const filtered = useMemo(() => {
         const qq = q.trim().toLowerCase();
-        return data.filter((x) => !qq || x.name.toLowerCase().includes(qq));
-    }, [q, data]);
+
+        return data.filter((x) => {
+            const matchesSearch = !qq || x.name.toLowerCase().includes(qq);
+            const matchesIndustry = industry === "Все отрасли" || x.industry === industry;
+            const matchesCity = city === "Все города" || x.city === city;
+
+            return matchesSearch && matchesIndustry && matchesCity;
+        });
+    }, [q, industry, city, data]);
 
     const reset = () => {
         setIndustry("Все отрасли");
@@ -155,7 +144,7 @@ export default function CareerEmployersPage() {
             <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h1 className="text-[20px] font-semibold text-black/80">Работодатели</h1>
-                    <div className="mt-1 text-[12px] text-black/45">Всего работодателей: 128</div>
+                    <div className="mt-1 text-[12px] text-black/45">Всего работодателей: {filtered.length}</div>
                 </div>
 
                 <button
@@ -187,24 +176,20 @@ export default function CareerEmployersPage() {
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Select value={industry} onChange={(e) => setIndustry(e.target.value)}>
-                    <option>Все отрасли</option>
-                    <option>IT</option>
-                    <option>Маркетинг</option>
-                    <option>Образование</option>
+                    {industries.map((x) => (
+                        <option key={x}>{x}</option>
+                    ))}
                 </Select>
 
                 <Select value={city} onChange={(e) => setCity(e.target.value)}>
-                    <option>Все города</option>
-                    <option>Алматы</option>
-                    <option>Астана</option>
-                    <option>Шымкент</option>
-                    <option>Павлодар</option>
+                    {cities.map((x) => (
+                        <option key={x}>{x}</option>
+                    ))}
                 </Select>
 
                 <Select value={status} onChange={(e) => setStatus(e.target.value)}>
                     <option>Все статусы</option>
                     <option>Активен</option>
-                    <option>На модерации</option>
                 </Select>
 
                 <button
@@ -216,21 +201,25 @@ export default function CareerEmployersPage() {
                 </button>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                {filtered.map((e) => (
-                    <EmployerCard key={e.id} e={e} />
-                ))}
-            </div>
+            {loading && (
+                <div className="mt-6 rounded-2xl border border-black/5 bg-white p-5 text-[12px] text-black/45">
+                    Загрузка работодателей...
+                </div>
+            )}
 
-            <div className="mt-8 flex items-center justify-center gap-2 text-[12px] text-black/45">
-                <button className="h-8 w-8 rounded-lg border border-black/10 bg-white hover:bg-black/5">←</button>
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1677ff] text-white">1</span>
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 bg-white">2</span>
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 bg-white">3</span>
-                <span className="px-2">…</span>
-                <span className="flex h-8 items-center rounded-lg border border-black/10 bg-white px-3">123</span>
-                <button className="h-8 w-8 rounded-lg border border-black/10 bg-white hover:bg-black/5">→</button>
-            </div>
+            {!loading && filtered.length === 0 && (
+                <div className="mt-6 rounded-2xl border border-black/5 bg-white p-5 text-[12px] text-black/45">
+                    Работодатели не найдены
+                </div>
+            )}
+
+            {!loading && filtered.length > 0 && (
+                <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {filtered.map((e) => (
+                        <EmployerCard key={e.id} e={e} />
+                    ))}
+                </div>
+            )}
 
             <div className="h-10" />
         </div>
