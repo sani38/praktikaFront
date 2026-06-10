@@ -431,11 +431,6 @@ export default function PublicHomePage() {
         }));
     }, [categories, language, text.defaultCategories]);
 
-    function formatCount(value) {
-        if (value === null || value === undefined) return "...";
-        return Number(value).toLocaleString(locale);
-    }
-
     function handlePrevCompanies() {
         if (companyNames.length === 0) return;
 
@@ -723,15 +718,15 @@ export default function PublicHomePage() {
                             {[
                                 {
                                     label: text.statsVacancies,
-                                    value: formatCount(vacancyCount),
+                                    value: vacancyCount,
                                 },
                                 {
                                     label: text.statsNewVacancies,
-                                    value: formatCount(newVacancyCount),
+                                    value: newVacancyCount,
                                 },
                                 {
                                     label: text.statsEmployers,
-                                    value: formatCount(employerCount),
+                                    value: employerCount,
                                 },
                             ].map((stat) => (
                                 <div key={stat.label} className="rounded-[16px] border border-[#e8ecf2]/90 bg-[#f6f8fb] px-4 py-[18px]">
@@ -835,7 +830,7 @@ export default function PublicHomePage() {
                 </div>
             </section>
 
-            <section className="py-4">
+            {/* <section className="py-4">
                 <div className="mx-auto w-[min(1180px,calc(100%-48px))]">
                     <div className="rounded-[22px] border border-[#e8ecf2]/85 bg-white p-[18px] shadow-[0_10px_30px_rgba(16,24,40,.08)]">
                         <div className="mb-3 flex flex-col gap-1">
@@ -904,7 +899,7 @@ export default function PublicHomePage() {
                         )}
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             <section className="py-4">
                 <div className="mx-auto w-[min(1180px,calc(100%-48px))]">
@@ -918,17 +913,17 @@ export default function PublicHomePage() {
                             {[
                                 {
                                     key: "vacancies",
-                                    big: formatCount(vacancyCount),
+                                    big: vacancyCount,
                                     small: text.numberCards.vacancies,
                                 },
                                 {
                                     key: "companies",
-                                    big: formatCount(companyCount),
+                                    big: companyCount,
                                     small: text.numberCards.companies,
                                 },
                                 {
                                     key: "regions",
-                                    big: formatCount(regionCount),
+                                    big: regionCount,
                                     small: text.numberCards.regions,
                                 },
                                 {

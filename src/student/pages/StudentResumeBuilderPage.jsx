@@ -1,4 +1,6 @@
 ﻿import React, { useMemo, useState } from "react";
+import { saveAs } from "file-saver";
+import { Document, Packer, Paragraph, HeadingLevel } from "docx";
 
 function Tab({ active, children, onClick }) {
     return (
@@ -32,14 +34,14 @@ export default function StudentResumeBuilderPage() {
     const [tab, setTab] = useState(tabs[0]);
 
     const [form, setForm] = useState({
-        name: "Захур",
-        lastName: "Фамилия",
-        middleName: "Отчество",
-        email: "Почта",
-        phone: "8(708)-56-34",
+        name: "Алина",
+        lastName: "Серикова",
+        middleName: "Нурлановна",
+        email: "student@test.kz",
+        phone: "+77010000001",
         city: "Алматы",
-        birth: "14.03.1999",
-        about: "Я массажист",
+        birth: "14.03.2003",
+        about: "Я студент IT-направления с сильной технической базой и практическим опытом разработки программного обеспечения. Уверенно работаю с современными технологиями, быстро осваиваю новые инструменты и стремлюсь понимать не только как работает решение, но и почему оно устроено именно так. Имею опыт командной разработки, работы с системами контроля версий, базами данных и веб-технологиями. Ответственно подхожу к задачам, умею самостоятельно находить решения и доводить проекты до результата.",
         photoName: "",
     });
 
@@ -47,14 +49,38 @@ export default function StudentResumeBuilderPage() {
 
     const title = useMemo(() => tab, [tab]);
 
-    const preview = () => {
-        const text =
-            `РЕЗЮМЕ\n\n` +
-            `Имя: ${form.name}\nФамилия: ${form.lastName}\nОтчество: ${form.middleName}\n` +
-            `Почта: ${form.email}\nТелефон: ${form.phone}\nГород: ${form.city}\nДата рождения: ${form.birth}\n\n` +
-            `О себе:\n${form.about}\n\n` +
-            `Фото: ${form.photoName || "не загружено"}\n`;
-        alert(text);
+    const preview = async () => {
+        const doc = new Document({
+            sections: [
+                {
+                    children: [
+                        new Paragraph({
+                            text: "РЕЗЮМЕ",
+                            heading: HeadingLevel.HEADING_1,
+                        }),
+
+                        new Paragraph(`Имя: ${form.name}`),
+                        new Paragraph(`Фамилия: ${form.lastName}`),
+                        new Paragraph(`Отчество: ${form.middleName}`),
+                        new Paragraph(`Email: ${form.email}`),
+                        new Paragraph(`Телефон: ${form.phone}`),
+                        new Paragraph(`Город: ${form.city}`),
+                        new Paragraph(`Дата рождения: ${form.birth}`),
+
+                        new Paragraph(""),
+                        new Paragraph("О себе:"),
+                        new Paragraph(form.about),
+                    ],
+                },
+            ],
+        });
+
+        const blob = await Packer.toBlob(doc);
+
+        saveAs(
+            blob,
+            `Resume_${form.lastName}_${form.name}.docx`
+        );
     };
 
     const save = () => {

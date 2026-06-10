@@ -107,9 +107,9 @@ export default function StudentContractsPage() {
         ]);
 
         setStats({
-            active,
-            signing,
-            finished,
+            active: active,
+            signing: signing,
+            finished: finished,
         });
     }
 
@@ -242,11 +242,23 @@ export default function StudentContractsPage() {
             <div className="mt-6 text-[14px] font-semibold text-black/75">
                 Информация о договорах
             </div>
-
+            
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <SmallStat title="Активные договоры" value={stats.active} />
-                <SmallStat title="На подписании" value={stats.signing} />
-                <SmallStat title="Завершенные" value={stats.finished} />
+                {[
+                    { key: "active", title: "Активные договоры", value: stats.active },
+                    { key: "signing", title: "На подписании", value: stats.signing },
+                    { key: "finished", title: "Завершенные", value: stats.finished },
+                ].map((item) => (
+                    <div
+                        key={`${item.key}-${item.value}`}
+                        className="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]"
+                    >
+                        <div className="text-[12px] text-black/45">{item.title}</div>
+                        <div className="mt-2 text-[24px] font-semibold text-[#1677ff]">
+                            {item.value}
+                        </div>
+                    </div>
+                ))}
             </div>
 
             <div className="mt-6 rounded-2xl border border-black/5 bg-white p-6 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
